@@ -235,17 +235,8 @@ class GUI(QObject):
 
     @pyqtProperty('QString', notify=statusUpdated)
     def title(self):
-        name = NAME
+        name = NAME + ": Comfy"
 
-        if self.debugMode() != 0:
-            name += " [DEBUG]"
-
-        if self._remoteStatus != RemoteStatusMode.INACTIVE:
-            if self._hostEndpoint:
-                name += ": Hosting"
-            else:
-                name += ": Remote"
-        
         return name
 
     @pyqtSlot(str, result=bool)
