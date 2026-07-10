@@ -28,7 +28,7 @@ import translation
 import misc
 import parameters
 
-NAME = "qDiffusion"
+NAME = "qComfy"
 
 MODEL_FOLDERS = {
     "checkpoint": ["SD", "Stable-diffusion"],
@@ -235,9 +235,7 @@ class GUI(QObject):
 
     @pyqtProperty('QString', notify=statusUpdated)
     def title(self):
-        name = NAME + ": Comfy"
-
-        return name
+        return NAME
 
     @pyqtSlot(str, result=bool)
     def isCached(self, file):

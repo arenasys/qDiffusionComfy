@@ -456,7 +456,7 @@ def launch(url):
     if scaling:
         QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
 
-    app = Application([NAME])
+    app = Application(["qComfy"])
     signal.signal(signal.SIGINT, lambda sig, frame: app.quit())
     app.startTimer(100)
 
