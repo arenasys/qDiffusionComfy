@@ -358,7 +358,7 @@ class Parameters(QObject):
             "sampler": "", "samplers":[], "model":"", "models":[], "UNET":"", "UNETs":[], "CLIP":"", "CLIPs":[], "VAE":"", "VAEs":[], "LoRA":[], "LoRAs":[],
             "upscaler": "default", "upscalers": ["default"],
             "device":"", "devices":[], "scheduler": "", "schedulers": [],
-            "preview_mode": "Disabled", "preview_modes": ["Disabled", "Enabled"],
+            "preview_mode": "Enabled", "preview_modes": ["Disabled", "Enabled"],
             "output_folder": "", "model_types": {},
             "model_mode": "checkpoint", "model_modes": ["checkpoint", "component"],
             "clip_type": "stable_diffusion", "clip_types": [],
