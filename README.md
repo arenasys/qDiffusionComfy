@@ -14,9 +14,11 @@ Things to know:
 
 ![example](https://github.com/arenasys/qDiffusion/raw/master/source/screenshot.png)
 
-### Linux
+### Install
 
-Brief instruction for install to `~`, assumes [ComfyUI](https://github.com/comfy-org/comfyui) is installed and working at `~/ComfyUI`, its venv at `~/ComfyUI/venv`, and its model folder at `~/ComfyUI/models`.
+Brief instruction for install to `~`, assumes ComfyUI is installed and working at `~/ComfyUI`, its venv at `~/ComfyUI/venv`, and its model folder at `~/ComfyUI/models`.
+
+TLDR, run comfy-inference-server in the ComfyUI venv, make sure its requirements.txt are installed, point it at ComfyUI. And for qDiffusion, its the same as before but only Remote mode is accessible.
 
 ```
 # INSTALL qDiffusion
