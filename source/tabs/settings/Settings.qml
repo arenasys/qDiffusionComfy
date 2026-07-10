@@ -44,15 +44,6 @@ Item {
                 SETTINGS.currentTab = name
             }
         }
-
-        SColumnButton {
-            property var name: "Host"
-            label: root.tr(name)
-            active: SETTINGS.currentTab == name
-            onPressed: {
-                SETTINGS.currentTab = name
-            }
-        }
     }
 
     STextSelectable {
@@ -88,11 +79,10 @@ Item {
         StackLayout {
             id: settingsStack
             anchors.fill: parent
-            currentIndex: ["Program", "Remote", "Host"].indexOf(SETTINGS.currentTab)
+            currentIndex: ["Program", "Remote"].indexOf(SETTINGS.currentTab)
             
             ProgramSettings { }
             RemoteSettings { }
-            HostSettings { }
         }
     }
 }

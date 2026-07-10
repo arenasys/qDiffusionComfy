@@ -203,16 +203,14 @@ Item {
                     property var isInp: typ == "Inpainting" || typ.endsWith("Detail");
                     property var isCFGPP: samplerColumn.sampler.endsWith("CFG++")
 
-                    property var maxSize: 1024
+                    property var maxSize: 2048
                     function updateMaxSize() {
                         var mx = Math.max(widthInput.value, heightInput.value)
                         var n = maxSize
-                        if(mx < 1024) {
-                            n = 1024
-                        } else if(mx >= 2048) {
-                            n = 4096
-                        } else if(mx >= 1024) {
+                        if(mx < 2048) {
                             n = 2048
+                        } else if(mx >= 2048) {
+                            n = 8192
                         }
                         if(n != maxSize) {
                             maxSize = n
@@ -323,6 +321,16 @@ Item {
                             optColumn.updateMaxSize()
                         }
 
+                        property real rightDragAspectRatio: 1
+
+                        onRightDragStarted: {
+                            rightDragAspectRatio = widthInput.value / heightInput.value
+                        }
+
+                        onRightDragUpdated: {
+                            heightInput.setValue(widthInput.value / rightDragAspectRatio, heightInput.incValue, false)
+                        }
+
                         AdvancedDropArea {
                             anchors.fill: parent
 
@@ -356,6 +364,16 @@ Item {
 
                         onEditted: {
                             optColumn.updateMaxSize()
+                        }
+
+                        property real rightDragAspectRatio: 1
+
+                        onRightDragStarted: {
+                            rightDragAspectRatio = widthInput.value / heightInput.value
+                        }
+
+                        onRightDragUpdated: {
+                            widthInput.setValue(heightInput.value * rightDragAspectRatio, widthInput.incValue, false)
                         }
                         
                         AdvancedDropArea {
@@ -427,9 +445,9 @@ Item {
                     id: samplerColumn
                     text: root.tr("Sampler")
                     width: parent.width
-                    isCollapsed: true
+                    isCollapsed: false
                     property var sampler: ""
-                    property var schedule: ""
+                    property var scheduler: ""
                     onExpanded: {
                         paramScroll.targetPosition(samplerColumn)
                     }
@@ -450,14 +468,14 @@ Item {
                     }
 
                     OChoice {
-                        id: scheduleInput
-                        label: root.tr("Schedule")
+                        id: schedulerInput
+                        label: root.tr("Scheduler")
                         width: parent.width
                         height: 30
                         
                         bindMap: root.binding.values
-                        bindKeyCurrent: "schedule"
-                        bindKeyModel: "schedules"
+                        bindKeyCurrent: "scheduler"
+                        bindKeyModel: "schedulers"
 
                         property var last: null
 
@@ -479,193 +497,43 @@ Item {
                         }
 
                         onValueChanged: {
-                            samplerColumn.schedule = scheduleInput.value == "Linear" ? "" : (" " + scheduleInput.value)
+                            samplerColumn.scheduler = schedulerInput.value == "Linear" ? "" : (" " + schedulerInput.value)
                         }
 
                         function display(text) {
                             return root.tr(text, "Options")
                         }
-                    }
-
-                    OSlider {
-                        id: etaInput
-                        label: root.tr("Eta")
-                        width: parent.width
-                        visible: root.advanced
-                        height: visible ? 30 : 0
-                        
-                        bindMap: root.binding.values
-                        bindKey: "eta"
-
-                        minValue: 0
-                        maxValue: 1
-                        precValue: 2
-                        incValue: 0.01
-                        snapValue: 0.05
                     }
                 }
                 OColumn {
                     id: modelColumn
                     text: root.tr("Model")
                     width: parent.width
-                    isCollapsed: true
-
-                    property var componentMode: unetInput.value != vaeInput.value || unetInput.value != clipInput.value
+                    isCollapsed: false
 
                     onExpanded: {
                         paramScroll.targetPosition(modelColumn)
                     }
 
-                    input: OChoice {
-                        id: modelInput
-                        label: ""
-                        width: modelColumn.width - 100
-                        height: 28
-
-                        bindMap: root.binding.values
-                        bindKeyCurrent: "model"
-                        bindKeyModel: "models"
-
-                        tooltip: value
-
-                        overlay: modelColumn.componentMode
-                        popupHeight: root.height + 100
-
-                        placeholderValue: "No models"
-
-                        function display(text) {
-                            return GUI.modelName(text)
-                        }
-
-                        function filterModel(model) {
-                            if(model) {
-                                return GUI.filterFavourites(model)
-                            } else {
-                                return []
-                            }
-                        }
-
-                        Connections {
-                            target: GUI
-                            function onFavUpdated() {
-                                modelInput.doUpdate()
-                            }
-                        }
-
-                        onSelected: {
-                            root.binding.values.set("VAE", value)
-                            root.binding.values.set("UNET", value)
-                            root.binding.values.set("CLIP", value)
-                            BASIC.applyDefaults()
-                        }
-
-                        onContextMenu: {
-                            modelsContextMenu.popup()
-                        }
-                    }
-
                     property var models: root.binding.values.get("models")
 
                     OChoice {
-                        id: modeInput
-                        visible: false
+                        id: modelModeInput
                         label: root.tr("Mode")
                         width: parent.width
-                        height: visible ? 30 : 0
-                        
+                        height: 30
+
                         bindMap: root.binding.values
                         bindKeyCurrent: "model_mode"
                         bindKeyModel: "model_modes"
-                        
-                        popupHeight: root.height + 100
-
-                        onSelected: {
-                            BASIC.saveDefaults()
-                        }
-                    }
-
-                    OChoice {
-                        id: predictionInput
-                        label: root.tr("Prediction")
-                        width: parent.width
-                        height: 30
-
-                        bindMap: root.binding.values
-                        bindKeyCurrent: "prediction_type"
-                        bindKeyModel: "prediction_types"
 
                         function display(text) {
-                            return root.tr(text, "Options")
-                        }
-                        
-                        onSelected: {
-                            BASIC.saveDefaults()
+                            return text.charAt(0).toUpperCase() + text.slice(1)
                         }
                     }
-      
-                    OSlider {
-                        id: cfgRescaleInput
-                        visible: root.advanced || predictionInput.value == "V"
-                        label: root.tr("CFG Rescale")
-                        width: parent.width
-                        height: 30
-
-                        bindMap: root.binding.values
-                        bindKey: "cfg_rescale"
-
-                        minValue: 0
-                        maxValue: 1
-                        precValue: 2
-                        incValue: 0.01
-                        snapValue: 0.05
-
-                        onFinished: {
-                            BASIC.saveDefaults()
-                        }
-                    }
-
-                    OChoice {
-                        id: zsnrInput
-                        visible: root.advanced || predictionInput.value == "V"
-                        label: root.tr("ZSNR")
-                        width: parent.width
-                        height: 30
-
-                        bindMap: root.binding.values
-                        bindKeyCurrent: "zsnr_mode"
-                        bindKeyModel: "zsnr_modes"
-
-                        function display(text) {
-                            return root.tr(text, "Options")
-                        }
-                        
-                        onSelected: {
-                            BASIC.saveDefaults()
-                        }
-                    }
-
-                    OSlider {
-                        label: root.tr("CLIP Skip")
-                        width: parent.width
-                        height: 30
-
-                        bindMap: root.binding.values
-                        bindKey: "clip_skip"
-
-                        minValue: 1
-                        maxValue: 12
-                        precValue: 0
-                        incValue: 1
-                        snapValue: 1
-
-                        onFinished: {
-                            BASIC.saveDefaults()
-                        }
-                    }
-
                     OChoice {
                         id: unetInput
-                        label: root.tr("UNET")
+                        label: modelModeInput.value == "component" ? root.tr("UNET") : root.tr("Checkpoint")
                         width: parent.width
                         height: 30
                         
@@ -673,16 +541,12 @@ Item {
                         bindKeyCurrent: "UNET"
                         bindKeyModel: "UNETs"
 
-                        overlay: !modelColumn.componentMode
                         popupHeight: root.height + 100
 
                         placeholderValue: "No models"
 
                         function decoration(value) {
-                            if(!modelColumn.models.includes(value)) {
-                                return root.tr("External")
-                            }
-                            return ""
+                            return GUI.modelSubfolder(value)
                         }
 
                         function display(text) {
@@ -697,22 +561,19 @@ Item {
                         id: vaeInput
                         label: root.tr("VAE")
                         width: parent.width
-                        height: 30
+                        height: modelModeInput.value == "component" ? 30 : 0
+                        visible: modelModeInput.value == "component"
 
                         bindMap: root.binding.values
                         bindKeyCurrent: "VAE"
                         bindKeyModel: "VAEs"
 
-                        overlay: !modelColumn.componentMode
                         popupHeight: root.height + 100
 
                         placeholderValue: "No models"
 
                         function decoration(value) {
-                            if(!modelColumn.models.includes(value)) {
-                                return root.tr("External")
-                            }
-                            return ""
+                            return GUI.modelSubfolder(value)
                         }
 
                         function display(text) {
@@ -723,22 +584,19 @@ Item {
                         id: clipInput
                         label: root.tr("CLIP")
                         width: parent.width
-                        height: 30
+                        height: modelModeInput.value == "component" ? 30 : 0
+                        visible: modelModeInput.value == "component"
 
                         bindMap: root.binding.values
                         bindKeyCurrent: "CLIP"
                         bindKeyModel: "CLIPs"
 
-                        overlay: !modelColumn.componentMode
                         popupHeight: root.height + 100
 
                         placeholderValue: "No models"
 
                         function decoration(value) {
-                            if(!modelColumn.models.includes(value)) {
-                                return root.tr("External")
-                            }
-                            return ""
+                            return GUI.modelSubfolder(value)
                         }
 
                         function display(text) {
@@ -746,26 +604,18 @@ Item {
                         }
                     }
                     OChoice {
-                        id: refinerInput
-                        visible: modeInput.value == "Refiner"
-                        label: root.tr("Refiner")
+                        id: clipTypeInput
+                        label: root.tr("Type")
                         width: parent.width
-                        height: visible ? 30 : 0
-                        
+                        height: modelModeInput.value == "component" ? 30 : 0
+                        visible: modelModeInput.value == "component"
+
                         bindMap: root.binding.values
-                        bindKeyCurrent: "Refiner"
-                        bindKeyModel: "Refiners"
-
-                        popupHeight: root.height + 100
-
-                        placeholderValue: "No models"
+                        bindKeyCurrent: "clip_type"
+                        bindKeyModel: "clip_types"
 
                         function display(text) {
-                            return GUI.modelName(text)
-                        }
-
-                        onSelected: {
-                            BASIC.saveDefaults()
+                            return text
                         }
                     }
                 }
@@ -775,7 +625,7 @@ Item {
                     text: root.tr("Networks")
                     width: parent.width
                     padding: false
-                    isCollapsed: true
+                    isCollapsed: false
 
                     onExpanded: {
                         paramScroll.targetPosition(netColumn)
@@ -827,12 +677,12 @@ Item {
                                         }
                                     }
 
-                                    function decoration(text) {
-                                        return GUI.netType(text)
-                                    }
-
                                     function display(text) {
                                         return GUI.modelName(text)
+                                    }
+
+                                    function decoration(value) {
+                                        return GUI.modelSubfolder(value)
                                     }
                                 }
 
@@ -888,6 +738,7 @@ Item {
                                         anchors.rightMargin: netScrollBar.showing ? 8 : 0
                                         label: GUI.modelName(modelData)
                                         type: GUI.netType(modelData)
+                                        decoration: GUI.modelSubfolder(modelData)
 
                                         onDeactivate: {
                                             root.binding.deleteNetwork(index)
@@ -897,26 +748,12 @@ Item {
                             }
                         }
                     }
-                    OChoice {
-                        label: root.tr("Mode")
-                        width: parent.width
-                        bottomPadded: true
-                        height: 30
-
-                        bindMap: root.binding.values
-                        bindKeyCurrent: "network_mode"
-                        bindKeyModel: "network_modes"
-
-                        function display(text) {
-                            return root.tr(text, "Options")
-                        }
-                    }
                 }
                 OColumn {
                     id: ipColumn
                     text: root.tr("Inpainting")
                     width: parent.width
-                    isCollapsed: true
+                    isCollapsed: false
 
                     onExpanded: {
                         paramScroll.targetPosition(ipColumn)
@@ -940,43 +777,6 @@ Item {
                         snapValue: 0.05
                     }
 
-                    OChoice {
-                        label: root.tr("Upscaler")
-                        width: parent.width
-                        height: 30
-
-                        bindMap: root.binding.values
-                        bindKeyCurrent: "img2img_upscaler"
-                        bindKeyModel: "img2img_upscalers"
-
-                        disabled: !optColumn.isImg
-
-                        popupHeight: root.height + 100
-
-                        property var sr: root.binding.values.get("SRs")
-
-                        function filterModel(model) {
-                            if(model) {
-                                return model.filter(u => !u.includes("Latent"));
-                            } else {
-                                return []
-                            }
-                        }
-
-                        function decoration(value) {
-                            if(sr.includes(value)) {
-                                return root.tr("SR")
-                            }
-                            if(value.startsWith("Latent")) {
-                                return root.tr("Latent")
-                            }
-                            return root.tr("Pixel")
-                        }
-
-                        function display(text) {
-                            return root.tr(GUI.modelName(text), "Options")
-                        }
-                    }
                     OSlider {
                         id: paddingInput
                         label: root.tr("Padding")
@@ -1036,424 +836,31 @@ Item {
                     }
 
                     OChoice {
-                        label: root.tr("Mask Fill")
+                        label: root.tr("Upscaler")
                         width: parent.width
                         height: 30
 
                         bindMap: root.binding.values
-                        bindKeyCurrent: "mask_fill"
-                        bindKeyModel: "mask_fill_modes"
+                        bindKeyCurrent: "upscaler"
+                        bindKeyModel: "upscalers"
 
-                        disabled: !optColumn.isInp
+                        disabled: !(optColumn.typ == "Img2Img" || optColumn.typ == "Inpainting" || optColumn.typ == "Upscaling")
 
                         function display(text) {
-                            return root.tr(text, "Options")
+                            return text === "default" ? root.tr("Default", "Options") : GUI.modelName(text)
                         }
-                    }
-                }
-
-                OColumn {
-                    id: detailerColumn
-                    text: root.tr("Detailer")
-                    width: parent.width
-                    padding: false
-                    isCollapsed: true
-
-                    Item {
-                        width: parent.width
-                        height: Math.min(200, 32+(detailerList.contentHeight == 0 ? 0 : detailerList.contentHeight+3))
-
-                        Rectangle {
-                            anchors.fill: parent
-                            anchors.margins: 2
-                            color: "transparent"
-                            border.color: COMMON.bg4
-                            border.width: 1
-
-                            Item {
-                                anchors.top: parent.top
-                                anchors.left: parent.left
-                                anchors.right: parent.right
-                                anchors.margins: 1
-                                id: detailerAdd
-                                height: 27
-
-                                Rectangle {
-                                    anchors.fill: parent
-                                    color: COMMON.bg2
-                                }
-
-                                OChoice {
-                                    id: detailerChoice
-                                    anchors.top: parent.top
-                                    anchors.bottom: parent.bottom
-                                    anchors.left: addDetailerButton.right
-                                    anchors.right: parent.right
-                                    anchors.margins: 0
-                                    anchors.topMargin: -1
-                                    padded: false
-                                    label: ""
-
-                                    placeholderValue: "No detailers"
-
-                                    bindMap: root.binding.values
-                                    bindKeyCurrent: "Detailer"
-                                    bindKeyModel: "Detailers"
-
-                                    function display(text) {
-                                        return GUI.modelName(text)
-                                    }
-                                }
-
-                                SIconButton {
-                                    id: addDetailerButton
-                                    anchors.top: parent.top
-                                    anchors.bottom: parent.bottom
-                                    anchors.left: parent.left
-                                    width: height
-                                    icon: "qrc:/icons/plus.svg"
-                                    color: COMMON.bg4
-                                    iconColor: COMMON.bg6
-
-                                    onPressed: {
-                                        root.binding.addDetailer(detailerChoice.value)
-                                    }
-                                }
-                            }
-
-                            ListView {
-                                id: detailerList
-                                anchors.top: detailerAdd.bottom
-                                anchors.bottom: parent.bottom
-                                anchors.left: parent.left
-                                anchors.right: parent.right
-                                anchors.margins:1
-                                anchors.topMargin: 0
-                                clip: true
-                                model: root.binding.activeDetailers
-
-                                boundsBehavior: Flickable.StopAtBounds
-
-                                ScrollBar.vertical: SScrollBarV {
-                                    id: detailerScrollBar
-                                    totalLength: detailerList.contentHeight
-                                    showLength: detailerList.height
-                                    incrementLength: 25
-                                }
-
-                                delegate: Item {
-                                    width: detailerList.width
-                                    height: 25
-
-                                    property var selected: false
-
-                                    Rectangle {
-                                        anchors.fill: parent
-                                        color: selected ? COMMON.bg2 : Qt.darker(COMMON.bg2, 1.25) 
-                                    }
-
-                                    ParametersDetailerItem {
-                                        anchors.fill: parent
-                                        anchors.rightMargin: detailerScrollBar.showing ? 8 : 0
-                                        label: GUI.modelName(modelData)
-
-                                        onDeactivate: {
-                                            BASIC.detailers.closeSettings(modelData)
-                                            root.binding.deleteDetailer(index)
-                                        }
-
-                                        onSettings: {
-                                            BASIC.detailers.openSettings(modelData)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                OColumn {
-                    id: hrColumn
-                    text: root.tr("Highres")
-                    width: parent.width
-                    isCollapsed: true
-                    property var isActive: hrFactorInput.value >= 1.0 && optColumn.isHR
-
-                    function getHRSize() {
-                        if(hrFactorInput.value == 1.0) {
-                            return ""
-                        }
-                        var w = Math.floor((widthInput.value * hrFactorInput.value)/8)*8
-                        var h = Math.floor((heightInput.value * hrFactorInput.value)/8)*8
-                        return w + "x" + h
-                    }
-
-                    input: Item {
-                        width: hrColumn.width - 100
-                        height: 30
-                        clip: true
-                        SText {
-                            text: hrColumn.getHRSize()
-                            anchors.fill: parent
-                            color: COMMON.fg2
-                            pointSize: 9.2
-                            opacity: 0.7
-                            verticalAlignment: Text.AlignVCenter
-                            horizontalAlignment: Text.AlignRight
-                            elide: Text.ElideRight
-                        }
-                    }
-
-                    onExpanded: {
-                        paramScroll.targetPosition(hrColumn)
-                    }
-
-                    OSlider {
-                        id: hrFactorInput
-                        label: optColumn.couldHR ? root.tr("HR Factor") : root.tr("Multiplier")
-                        width: parent.width
-                        height: 30
-
-                        overlay: hrFactorInput.value == 1.0 && optColumn.couldHR
-
-                        bindMap: root.binding.values
-                        bindKey: "hr_factor"
-
-                        minValue: 1.0
-                        maxValue: 4.0
-                        precValue: 2
-                        incValue: 0.25
-                        snapValue: 0.25
-                        bounded: false
-                    }
-                    OSlider {
-                        label: root.tr("HR Strength")
-                        width: parent.width
-                        height: 30
-
-                        disabled: !hrColumn.isActive
-                        overlay: !hrColumn.isActive
-
-                        bindMap: root.binding.values
-                        bindKey: "hr_strength"
-
-                        minValue: 0
-                        maxValue: 1
-                        precValue: 2
-                        incValue: 0.01
-                        snapValue: 0.05
-                    }
-                    OChoice {
-                        label: root.tr("HR Upscaler")
-                        width: parent.width
-                        height: 30
-
-                        disabled: !hrColumn.isActive
-                        overlay: !hrColumn.isActive
-
-                        bindMap: root.binding.values
-                        bindKeyCurrent: "hr_upscaler"
-                        bindKeyModel: "hr_upscalers"
-
-                        popupHeight: root.height + 100
-
-                        property var sr: root.binding.values.get("SRs")
 
                         function decoration(value) {
-                            if(sr.includes(value)) {
-                                return root.tr("SR")
-                            }
-                            if(value.startsWith("Latent")) {
-                                return root.tr("Latent")
-                            }
-                            return root.tr("Pixel")
-                        }
-
-                        function display(text) {
-                            return root.tr(GUI.modelName(text), "Options")
-                        }
-                    }
-                    OSlider {
-                        id: hrStepsInput
-                        label: root.tr("HR Steps")
-                        width: parent.width
-                        height: 30
-
-                        bindMap: root.binding.values
-                        bindKey: "hr_steps"
-
-                        disabled: !hrColumn.isActive
-                        overlay: !hrColumn.isActive || stepsInput.value == hrStepsInput.value
-                        defaultValue: root.binding.values.get("steps")
-
-                        minValue: 1
-                        maxValue: 100
-                        precValue: 0
-                        incValue: 1
-                        snapValue: 5
-                        bounded: false
-                    }
-                    OChoice {
-                        visible: root.advanced
-                        id: hrSamplerInput
-                        label: root.tr("HR Sampler")
-                        width: parent.width
-                        height: 30
-                        disabled: !hrColumn.isActive
-                        overlay: !hrColumn.isActive || samplerColumn.sampler + samplerColumn.schedule == hrSamplerInput.value
-                        bindMap: root.binding.values
-                        bindKeyCurrent: "hr_sampler"
-                        bindKeyModel: "true_samplers"
-                    }
-
-                    OSlider {
-                        visible: root.advanced
-                        id: hrScaleInput
-                        label: root.tr("HR Scale")
-                        width: parent.width
-                        height: 30
-                        
-                        bindMap: root.binding.values
-                        bindKey: "hr_scale"
-
-                        disabled: !hrColumn.isActive
-                        overlay: !hrColumn.isActive || scaleInput.value == hrScaleInput.value
-                        defaultValue: root.binding.values.get("scale")
-
-                        minValue: 1
-                        maxValue: 20
-                        precValue: 1
-                        incValue: 1
-                        snapValue: 0.5
-                        bounded: false
-                    }
-
-                    OChoice {
-                        id: hrModelInput
-                        label: root.tr("HR Model")
-                        width: parent.width
-                        height: 30
-
-                        disabled: !hrColumn.isActive
-                        overlay: !hrColumn.isActive || unetInput.value == hrModelInput.value
-
-                        bindMap: root.binding.values
-                        bindKeyCurrent: "hr_model"
-                        bindKeyModel: "models"
-
-                        tooltip: value
-
-                        popupHeight: root.height + 100
-
-                        placeholderValue: "No models"
-
-                        function display(text) {
-                            return GUI.modelName(text)
+                            return value === "default" ? "" : GUI.modelSubfolder(value)
                         }
                     }
                 }
-                OColumn {
-                    id: miscColumn
-                    text: root.tr("Misc")
-                    width: parent.width
-                    isCollapsed: true
 
-                    onExpanded: {
-                        paramScroll.targetPosition(miscColumn)
-                    }
-
-                    OSlider {
-                        label: root.tr("Batch Count")
-                        width: parent.width
-                        height: 30
-
-                        bindMap: root.binding.values
-                        bindKey: "batch_count"
-
-                        minValue: 1
-                        maxValue: 16
-                        precValue: 0
-                        incValue: 1
-                        snapValue: 1
-                        bounded: false
-                    }
-
-                    OSlider {
-                        label: root.tr("Batch Size")
-                        width: parent.width
-                        height: 30
-
-                        bindMap: root.binding.values
-                        bindKey: "batch_size"
-
-                        minValue: 1
-                        maxValue: 8
-                        precValue: 0
-                        incValue: 1
-                        snapValue: 1
-                        bounded: false
-                    }
-
-                    OSlider {
-                        visible: root.advanced
-                        label: root.tr("ToMe Ratio")
-                        width: parent.width
-                        height: 30
-
-                        bindMap: root.binding.values
-                        bindKey: "tome_ratio"
-
-                        overlay: value == 0.0
-
-                        minValue: 0
-                        maxValue: 1
-                        precValue: 2
-                        incValue: 0.01
-                        snapValue: 0.05
-                    }
-
-                    OSlider {
-                        id: subseedStrInput
-                        visible: root.advanced
-                        label: root.tr("Subseed strength")
-                        width: parent.width
-                        height: 30
-                        overlay: subseedStrInput.value == 0.0
-                        
-                        bindMap: root.binding.values
-                        bindKey: "subseed_strength"
-
-                        minValue: 0
-                        maxValue: 0.25
-                        precValue: 3
-                        incValue: 0.001
-                        snapValue: 0.005
-                        bounded: false
-                    }
-
-                    OTextInput {
-                        id: subseedInput
-                        visible: root.advanced
-                        label: root.tr("Subseed")
-                        width: parent.width
-                        height: 30
-                        disabled: subseedStrInput.overlay
-
-                        bindMap: root.binding.values
-                        bindKey: "subseed"
-
-                        validator: RegExpValidator {
-                            regExp: /-1||\d{1,10}/
-                        }
-
-                        override: value == "-1" && !active ? "Random" : ""
-                    }
-                }
                 OColumn {
                     id: opColumn
                     text: root.tr("Operation")
                     width: parent.width
-                    isCollapsed: true
+                    isCollapsed: false
 
                     onExpanded: {
                         paramScroll.targetPosition(opColumn)
@@ -1471,170 +878,6 @@ Item {
                         onSelected: {
                             GUI.config.set("previews", value)
                         }
-
-                        function display(text) {
-                            return root.tr(text, "Options")
-                        }
-                    }
-
-                    OSlider {
-                        label: root.tr("Preview interval")
-                        width: parent.width
-                        height: 30
-                        
-                        bindMap: root.binding.values
-                        bindKey: "preview_interval"
-
-                        minValue: 1
-                        maxValue: 10
-                        precValue: 0
-                        incValue: 1
-                        snapValue: 1
-
-                        onSelected: {
-                            GUI.config.set("preview_interval", value)
-                        }
-                    }
-
-                    OChoice {
-                        visible: GUI.isRemote
-                        label: root.tr("Fetching")
-                        width: parent.width
-                        height: visible ? 30 : 0
-
-                        bindMap: root.binding.values
-                        bindKeyCurrent: "fetching_mode"
-                        bindKeyModel: "fetching_modes"
-
-                        onSelected: {
-                            GUI.config.set("fetching", value)
-                        }
-
-                        function display(text) {
-                            return root.tr(text, "Options")
-                        }
-                    }
-
-                    OChoice {
-                        label: root.tr("Artifacts")
-                        width: parent.width
-                        height: 30
-
-                        bindMap: root.binding.values
-                        bindKeyCurrent: "artifact_mode"
-                        bindKeyModel: "artifact_modes"
-
-                        onSelected: {
-                            GUI.config.set("artifacts", value)
-                        }
-
-                        function display(text) {
-                            return root.tr(text, "Options")
-                        }
-                    }
-
-                    OChoice {
-                        label: root.tr("VRAM")
-                        width: parent.width
-                        height: 30
-
-                        bindMap: root.binding.values
-                        bindKeyCurrent: "vram_mode"
-                        bindKeyModel: "vram_modes"
-
-                        onSelected: {
-                            GUI.config.set("vram", value)
-                        }
-
-                        function display(text) {
-                            return root.tr(text, "Options")
-                        }
-                    }
-
-                    OChoice {
-                        label: root.tr("Attention")
-                        width: parent.width
-                        height: 30
-
-                        bindMap: root.binding.values
-                        bindKeyCurrent: "attention"
-                        bindKeyModel: "attentions"
-
-                        onSelected: {
-                            GUI.config.set("attention", value)
-                        }
-
-                        function display(text) {
-                            return root.tr(text, "Options")
-                        }
-                    }
-
-                    OChoice {
-                        visible: root.advanced
-                        label: root.tr("VAE Tiling")
-                        width: parent.width
-                        height: 30
-
-                        bindMap: root.binding.values
-                        bindKeyCurrent: "tiling_mode"
-                        bindKeyModel: "tiling_modes"
-
-                        onSelected: {
-                            GUI.config.set("vae_tiling", value)
-                        }
-
-                        function display(text) {
-                            return root.tr(text, "Options")
-                        }
-                    }
-
-                    OChoice {
-                        visible: root.advanced
-                        label: root.tr("Precision")
-                        width: parent.width
-                        height: 30
-
-                        bindMap: root.binding.values
-                        bindKeyCurrent: "precision"
-                        bindKeyModel: "precisions"
-
-                        onSelected: {
-                            GUI.config.set("precision", value)
-                        }
-
-                        function display(text) {
-                            return root.tr(text, "Options")
-                        }
-                    }
-
-                    OChoice {
-                        visible: root.advanced
-                        label: root.tr("VAE Precision")
-                        width: parent.width
-                        height: 30
-
-                        bindMap: root.binding.values
-                        bindKeyCurrent: "vae_precision"
-                        bindKeyModel: "precisions"
-
-                        onSelected: {
-                            GUI.config.set("vae_precision", value)
-                        }
-
-                        function display(text) {
-                            return root.tr(text, "Options")
-                        }
-                    }
-
-                    OChoice {
-                        visible: root.advanced
-                        label: root.tr("Autocast")
-                        width: parent.width
-                        height: 30
-
-                        bindMap: root.binding.values
-                        bindKeyCurrent: "autocast"
-                        bindKeyModel: "autocast_modes"
 
                         function display(text) {
                             return root.tr(text, "Options")

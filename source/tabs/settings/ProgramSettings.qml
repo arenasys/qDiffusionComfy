@@ -38,16 +38,6 @@ Item {
             pointSize: 9.8
             color: COMMON.fg2
         }
-        STextSelectable {
-            text: root.tr("Inference commit: %1").arg(SETTINGS.gitServerInfo)
-            width: parent.width
-            height: visible ? 10 : 0
-            visible: SETTINGS.gitServerInfo != ""
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: Text.AlignHCenter
-            pointSize: 9.8
-            color: COMMON.fg2
-        }
         
         Item {
             width: parent.width
@@ -59,7 +49,7 @@ Item {
             }
             SText {
                 text: root.tr("Restart required")
-                visible: (!SETTINGS.updating && SETTINGS.needRestart) || scalingChoice.needRestart || modeChoice.needRestart
+                visible: (!SETTINGS.updating && SETTINGS.needRestart) || scalingChoice.needRestart
                 anchors.fill: parent
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
@@ -138,102 +128,6 @@ Item {
             }
         }
 
-        Item {
-            width: parent.width
-            height: 30
-            OTextInput {
-                anchors.leftMargin: -2
-                anchors.left: parent.left
-                anchors.right: setmodelButton.left
-                anchors.top: parent.top
-                id: modelFolderInput
-                height: 30
-                label: root.tr("Model Folder")
-                placeholder: "models"
-
-                value: GUI.config.get("model_directory")
-
-                onValueChanged: {
-                    GUI.config.set("model_directory", value)
-                }
-            }
-
-            SIconButton {
-                id: setmodelButton
-                height: 28
-                width: 28
-                anchors.top: parent.top
-                anchors.right: parent.right
-                anchors.margins: 2
-                icon: "qrc:/icons/folder.svg"
-                border.color: COMMON.bg4
-
-                onPressed: {
-                    modelFolderDialog.open()
-                }
-            }
-
-            FolderDialog {
-                id: modelFolderDialog
-
-                onAccepted: {
-                    modelFolderInput.value = SETTINGS.toLocal(modelFolderDialog.folder)
-                }
-            }
-
-            AdvancedDropArea {
-                id: modelFolderDrop
-                anchors.fill: modelFolderInput
-
-                onDropped: {
-                    var folder = SETTINGS.pathDrop(mimeData)
-                    if(folder != null) {
-                        modelFolderInput.value = folder
-                    }
-                }
-
-                Rectangle {
-                    visible: modelFolderDrop.containsDrag
-                    anchors.fill: parent
-                    color: "transparent"
-                    border.color: COMMON.fg2
-                    anchors.topMargin: 2
-                    anchors.leftMargin: 2
-                    anchors.rightMargin: 2
-                }
-            }
-        }
-        OChoice {
-            id: modeChoice
-            x: -2
-            width: parent.width+2
-            height: 30
-            label: root.tr("Inference Mode")
-            property var needRestart: false
-            property var modes: ["nvidia", "amd", "remote"]
-            property var original: ""
-            currentIndex: modes.indexOf(GUI.config.get("mode"))
-            entries: ["Nvidia", "AMD", "Remote"]
-            onCurrentIndexChanged: {
-                var mode = modes[currentIndex]
-                GUI.config.set("mode", mode)
-                needRestart = original != "" ? mode != original : false
-            }
-            Component.onCompleted: {
-                original = GUI.config.get("mode")
-            }
-        }
-        OChoice {
-            x: -2
-            width: parent.width+2
-            height: 30
-            label: root.tr("Advanced Parameters")
-            currentIndex: GUI.config.get("advanced") ? 1 : 0 
-            entries: [root.tr("Hide", "General"), root.tr("Show", "General")]
-            onCurrentIndexChanged: {
-                GUI.config.set("advanced", currentIndex != 0)
-            }
-        }
         OChoice {
             id: scalingChoice
             x: -2
@@ -250,38 +144,6 @@ Item {
             property var needRestart: original != currentIndex
             Component.onCompleted: {
                 original = GUI.config.get("scaling") ? 1 : 0 
-            }
-        }
-        Item {
-            width: parent.width+2
-            height: 30
-        }
-        OChoice {
-            x: -2
-            width: parent.width+2
-            height: 30
-            label: root.tr("Debug Logging")
-            currentIndex: GUI.config.get("debug") ? 1 : 0 
-            entries: [root.tr("Disabled", "General"), root.tr("Enabled", "General")]
-            onCurrentIndexChanged: {
-                GUI.config.set("debug", currentIndex != 0)
-            }
-        }
-        OChoice {
-            x: -2
-            width: parent.width+2
-            height: 30
-            label: root.tr("Debug Mode")
-            property var idx: GUI.config.get("debug_mode")
-            currentIndex: idx ? Math.min(entries.length-1, idx) : 0
-            entries: ["None", "Disable loss graph"]
-            onCurrentIndexChanged: {
-                GUI.setDebugMode(currentIndex)
-            }
-            Component.onCompleted: {
-                if(idx >= entries.length) {
-                    GUI.setDebugMode(0)
-                }
             }
         }
     }

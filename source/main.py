@@ -223,7 +223,7 @@ class Coordinator(QObject):
         self._installed = []
         self._installing = ""
 
-        self._modes = ["nvidia", "amd", "remote"]
+        self._modes = ["remote"]
 
         self._mode = 0
         self.in_venv = "VIRTUAL_ENV" in os.environ
@@ -250,50 +250,22 @@ class Coordinator(QObject):
         except Exception:
             pass
 
-        with open(os.path.join("source", "requirements_gui.txt")) as file:
+        with open(os.path.join("source", "requirements.txt")) as file:
             self.required = [line.rstrip() for line in file]
 
-        with open(os.path.join("source", "requirements_inference.txt")) as file:
-            self.optional = [line.rstrip() for line in file]
+        self.optional = []
 
         self.find_needed()
 
         qmlRegisterSingletonType(Coordinator, "gui", 1, 0, "COORDINATOR", lambda qml, js: self)
 
     def find_needed(self):
-        self.torch_version = ""
-        self.torchvision_version = ""
-        self.directml_version = ""
-
-        try:
-            self.torch_version = str(pkg_resources.get_distribution("torch")).split()[-1]
-        except:
-            pass
-
-        try:
-            self.torchvision_version = str(pkg_resources.get_distribution("torchvision")).split()[-1]
-        except:
-            pass
-
-        try:
-            self.directml_version = str(pkg_resources.get_distribution("torch-directml")).split()[-1]
-        except:
-            pass
-
-        self.nvidia_torch_version = "2.1.0+cu118"
-        self.nvidia_torchvision_version = "0.16+cu118"
-
-        self.amd_torch_version = "2.1.0+rocm5.6"
-        self.amd_torchvision_version = "0.16.0+rocm5.6"
-
-        self.amd_torch_directml_version = "0.2.0.dev230426"
-        
         self.required_need = check(self.required, self.enforce)
         self.optional_need = check(self.optional, self.enforce)
     
     @pyqtProperty(list, constant=True)
     def modes(self):
-        return ["Nvidia", "AMD", "Remote"]
+        return ["Remote"]
 
     @pyqtProperty(int, notify=updated)
     def mode(self):
@@ -352,24 +324,7 @@ class Coordinator(QObject):
         return self._needRestart
 
     def get_needed(self):
-        mode = self._modes[self._mode]
         needed = []
-        if mode == "nvidia":
-            if not "+cu" in self.torch_version:
-                needed += ["torch=="+self.nvidia_torch_version]
-            if not "+cu" in self.torchvision_version:
-                needed += ["torchvision=="+self.nvidia_torchvision_version]
-            needed += self.optional_need
-        if mode == "amd":
-            if IS_WIN:
-                if not self.directml_version:
-                    needed += ["torch-directml==" + self.amd_torch_directml_version]
-            else:
-                if not "+rocm" in self.torch_version:
-                    needed += ["torch=="+self.amd_torch_version]
-                if not "+rocm" in self.torchvision_version:
-                    needed += ["torchvision=="+self.amd_torchvision_version]
-            needed += self.optional_need
 
         needed += self.required_need
 

@@ -53,36 +53,6 @@ Item {
         parent.releaseFocus()
     }
 
-    SDialog {
-        id: buildDialog
-        title: root.tr("Build model")
-        standardButtons: Dialog.Ok | Dialog.Cancel
-        modal: true
-        dim: true
-
-        Connections {
-            target: BASIC
-            function onStartBuildModel() {
-                buildDialog.open()
-            }
-        }
-
-        OTextInput {
-            id: filenameInput
-            width: 290
-            height: 30
-            label: root.tr("Filename")
-            value: GUI.modelName(BASIC.parameters.values.get("UNET")) + ".safetensors"
-        }
-
-        width: 300
-        height: 87
-
-        onAccepted: {
-            BASIC.buildModel(filenameInput.value)
-        }
-    }
-
     AdvancedDropArea {
         id: basicDrop
         anchors.fill: parent

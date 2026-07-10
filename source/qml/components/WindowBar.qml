@@ -17,43 +17,7 @@ SMenuBar {
         id: menu
         title: root.tr("File")
         clipShadow: true
-        SMenu {
-            title: root.tr("Import")
-            clipShadow: true
-            Repeater {
-                property var tmp: ["Checkpoint", "Component", "LoRA", "Embedding", "Upscaler", "Detailer"]
-                model: tmp
-                SMenuItem {
-                    text: root.tr(modelData)
 
-                    onPressed: {
-                        importFileDialog.mode = EXPLORER.getMode(modelData+"s")
-                        importFileDialog.open()
-                    }
-                }
-            }
-
-            FileDialog {
-                id: importFileDialog
-                nameFilters: [root.tr("Model files") + " (*.pt *.pth *.ckpt *.bin *.safetensors *.st)"]
-                property var mode: ""
-
-                onAccepted: {
-                    if(GUI.isRemote) {
-                        GUI.currentTab = "Settings"
-                        SETTINGS.currentTab = "Remote"
-                        var modeIndex = ["checkpoint","component","lora","embedding","upscaler","detailer"].indexOf(mode)
-                        modeIndex = Math.max(modeIndex - 1, 0)
-                        SETTINGS.setUpload(file, modeIndex)
-                    } else {
-                        GUI.currentTab = "Models"
-                        EXPLORER.setCurrent(mode, "")
-                        GUI.importModel(mode, file)
-                    }
-                }
-            }
-        }
-        SMenuSeparator {}
         SMenuItem {
             text: root.tr("Update")
             onPressed: {
@@ -89,26 +53,6 @@ SMenuBar {
 
             onPressed: {
                 GUI.refreshModels()
-            }
-        }
-
-        SMenuItem {
-            visible: GUI.currentTab == "Generate"
-            text: root.tr("Build model")
-            onPressed: {
-                BASIC.doBuildModel()
-            }
-        }
-
-        SMenuItem {
-            visible: GUI.currentTab == "Generate" || GUI.currentTab == "Merge"
-            text: root.tr("XY Grid")
-            onPressed: {
-                if(GUI.currentTab == "Generate") {
-                    BASIC.grid.openGrid()
-                } else {
-                    MERGER.grid.openGrid()
-                }
             }
         }
     }
@@ -196,48 +140,6 @@ SMenuBar {
         title: root.tr("Help")
         clipShadow: true
 
-        SMenuItem {
-            text: root.tr("Open Guide")
-            onPressed: {
-                GUI.openLink("https://github.com/arenasys/qDiffusion/wiki/Guide")
-            }
-        }
-        SMenuItem {
-            text: root.tr("Report Issue")
-            onPressed: {
-                GUI.openLink("https://github.com/arenasys/qDiffusion/issues/new?assignees=&labels=&projects=&template=bug_report.md&title=")
-            }
-        }
-        SMenuSeparator {}
-        SMenu {
-            title: root.tr("Get Model")
-            width: 110
-            SMenuItem {
-                text: root.tr("SD-v1")
-                onPressed: {
-                    SETTINGS.download("SD", "https://huggingface.co/datasets/arenasys/qDiffusion/blob/main/SD-v1.safetensors")
-                }
-            }
-            SMenuItem {
-                text: root.tr("SD-v2")
-                onPressed: {
-                    SETTINGS.download("SD", "https://huggingface.co/datasets/arenasys/qDiffusion/blob/main/SD-v2.safetensors")
-                }
-            }
-            SMenuItem {
-                text: root.tr("SDXL")
-                onPressed: {
-                    SETTINGS.download("SD", "https://huggingface.co/datasets/arenasys/qDiffusion/blob/main/SDXL.safetensors")
-                }
-            }
-            SMenuItem {
-                text: root.tr("Face detailer")
-                onPressed: {
-                    SETTINGS.download("Detailer", "https://huggingface.co/Bingsu/adetailer/resolve/main/face_yolov8s.pt")
-                }
-            }
-        }
-        SMenuSeparator {}
         SMenuItem {
             text: root.tr("About")
             onPressed: {

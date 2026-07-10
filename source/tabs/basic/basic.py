@@ -774,22 +774,12 @@ class Basic(QObject):
                 t = "Img2Img"
             if r == InputRole.MASK and t == "Img2Img":
                 t = "Inpainting"
-            if r == InputRole.SEGMENTATION and t == None:
-                t = "Segmenting"
         if not t:
             t = "Txt2Img"
         
         upsc = self._parameters._values.get("steps") == 0 or self._parameters._values.get("strength") == 0.0
         if t in ["Img2Img", "Inpainting"] and upsc:
             t = "Upscaling"
-
-        hr = self._parameters._values.get("hr_factor") > 1.0
-
-        is_txt2img = t == "Txt2Img"
-        if is_txt2img and hr:
-            t += " + HR"
-        if is_txt2img and self._parameters._activeDetailers:
-            t += " + Detail"
 
         return t
 
@@ -803,12 +793,7 @@ class Basic(QObject):
         model_name = self.gui.modelName(model)
 
         defaults = self.gui.getDefaults(model_name)
-        fallback = {
-            "model_mode": "Standard",
-            "prediction_type": "Default",
-            "cfg_rescale": 0.0,
-            "clip_skip": 1
-        }
+        fallback = {}
         for k, v in fallback.items():
             if not k in defaults:
                 defaults[k] = v
@@ -825,6 +810,6 @@ class Basic(QObject):
         model = self._parameters._values.get("model")
         model_name = self.gui.modelName(model)
         defaults = {}
-        for k in ["model_mode", "prediction_type", "cfg_rescale", "clip_skip", "zsnr_mode"]:
+        for k in []:
             defaults[k] = self._parameters._values.get(k)
         self.gui.setDefaults(model_name, defaults)

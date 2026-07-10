@@ -56,6 +56,9 @@ Item {
     signal selected()
     signal finished()
     signal editted()
+    signal rightDragStarted()
+    signal rightDragUpdated()
+    signal rightDragFinished()
 
     function label_display(text) {
         return text
@@ -119,7 +122,7 @@ Item {
         root.selected()
     }
 
-    function setValue(x, m) {
+    function setValue(x, m, emitEditted = true) {
         if(root.disabled) {
             return
         }
@@ -140,7 +143,9 @@ Item {
 
         root.value = x
         root.selected()
-        root.editted()
+        if(emitEditted) {
+            root.editted()
+        }
     }
 
     Rectangle {
@@ -163,6 +168,7 @@ Item {
             anchors.leftMargin: 0
             hoverEnabled: true
             preventStealing: true
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
 
             function update() {
                 var pos = mouseX
@@ -177,18 +183,30 @@ Item {
 
             onPressed: {
                 root.forceActiveFocus()
+                if(mouse.button === Qt.RightButton) {
+                    root.rightDragStarted()
+                }
                 mouseArea.update()
+                if(mouse.button === Qt.RightButton) {
+                    root.rightDragUpdated()
+                }
             }
 
             onPositionChanged: {
                 if(pressed) {
                     mouseArea.update()
+                    if(pressedButtons & Qt.RightButton) {
+                        root.rightDragUpdated()
+                    }
                 }
             }
 
             onReleased: {
                 root.finished()
                 root.editted()
+                if(mouse.button === Qt.RightButton) {
+                    root.rightDragFinished()
+                }
             }
 
             property var accum: 0

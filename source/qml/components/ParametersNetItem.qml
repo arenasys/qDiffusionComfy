@@ -13,6 +13,7 @@ Item {
 
     property var label: "Label"
     property var type: ""
+    property var decoration: ""
 
     Rectangle {
         anchors.fill: parent
@@ -44,31 +45,31 @@ Item {
             }
         }
         SText {
-            anchors.right: typeText.left
+            id: decoText
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            width: contentWidth
+            rightPadding: 7
+
+            text: root.decoration
+            pointSize: root.mini ? 7.7 : 9.6
+            color: width < contentWidth ? "transparent" : COMMON.fg2
+            horizontalAlignment: Text.AlignRight
+            verticalAlignment: Text.AlignVCenter
+        }
+        SText {
+            anchors.right: decoText.left
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.bottom: parent.bottom
+            anchors.rightMargin: 12
             leftPadding: 7
 
             text: root.label
             pointSize: root.mini ? 7.7 : 9.6
             color: COMMON.fg0
             horizontalAlignment: Text.AlignLeft
-            verticalAlignment: Text.AlignVCenter
-            elide: Text.ElideRight
-        }
-
-        SText {
-            id: typeText
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            rightPadding: 7
-
-            text: root.type
-            pointSize: root.mini ? 7.7 : 9.6
-            color: COMMON.fg2
-            horizontalAlignment: Text.AlignRight
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
         }

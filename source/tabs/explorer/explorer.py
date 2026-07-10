@@ -17,7 +17,10 @@ from gui import MODEL_FOLDERS
 LABELS =  {
     "favourite": "Favourites",
     "checkpoint": "Checkpoints",
-    "component": "Components",
+    "unet": "UNET",
+    "clip": "CLIP",
+    "vae": "VAE",
+
     "lora": "LoRAs",
     "embedding": "Embeddings",
     "upscaler": "Upscalers",
@@ -92,59 +95,10 @@ class Populater(QObject):
         w,h = 0,0
         preview = ""
 
-        image_exts = [".preview.png", ".png", ".jpg", ".jpeg"]
-        possible_images = [file_name + e for e in image_exts] +[file_name_no_ext + e for e in image_exts] 
-        for p in possible_images:
-            files = [os.path.join(folder_name, p)]
-            files += [i for i in self.all_images if i.endswith(p)]
-            for file in files:
-                if not os.path.exists(file):
-                    continue
-                try:
-                    with PIL.Image.open(file) as img:
-                        preview = file
-                        w,h = img.size
-                        break
-                except:
-                    pass
-            else:
-                continue
-            break
-        
         if not preview:
             preview = os.path.join(self.gui.modelDirectory(), name + ".png")
         
         description = ""
-        desc_exts = [".txt", ".csv", ".civitai.info"]
-        possible_descs = [file_name + e for e in  desc_exts] + [file_name_no_ext + e for e in desc_exts]
-
-        for p in possible_descs:
-            files = [os.path.join(folder_name, p)]
-            files += [i for i in self.all_descs if i.endswith(p)]
-            for file in files:
-                if not os.path.exists(file):
-                    continue
-                if file.endswith(".civitai.info"):
-                    with open(file, "r", encoding='utf-8') as f:
-                        try:
-                            data = json.load(f)
-                            description = f"""
-                                <p><b>Name</b>: {data['model']['name']}<br>
-                                <b>Type</b>: {data['model']['type']}<br>
-                                <b>Activation</b>: {', '.join(data['trainedWords'])}<br>
-                                <b>Base model</b>: {data['baseModel']}<br>
-                                <b>Description</b>: </p>{data['description']}
-                            """
-                            break
-                        except:
-                            pass
-                else:
-                    with open(file, "r", encoding='utf-8') as f:
-                        description = f.read().strip()
-                        break
-            else:
-                continue
-            break
         
         q.prepare("INSERT OR REPLACE INTO models(name, category, display, type, file, folder, desc, idx, width, height) VALUES (:name, :category, :display, :type, :file, :folder, :desc, :idx, :width, :height);")
         q.bindValue(":name", name)
@@ -177,33 +131,31 @@ class Populater(QObject):
             return
         
         o = self.gui._options
-        tp = self.gui._options.get("model_types", {})
-        checkpoints = [a for a in o["UNET"] if a in o["VAE"] and a in o["CLIP"]]
-        for idx, name in enumerate(checkpoints):
+        tp = self.gui._options.get("model_types", {})\
+
+        for idx, name in enumerate(o["UNET"]):
             self.setModel(name, "checkpoint", "", "checkpoint", idx)
-        self.finishCategory("checkpoint", len(checkpoints))
-        
-        components = [a for a in o["VAE"] if not a in checkpoints]
-        for idx, name in enumerate(components):
-            self.setModel(name, "component", "VAE", "component", idx)
-        self.finishCategory("component", len(components))
+        self.finishCategory("checkpoint", len(o["UNET"]))
+
+        for idx, name in enumerate(o["UNET"]):
+            self.setModel(name, "unet", "", "unet", idx)
+        self.finishCategory("unet", len(o["UNET"]))
+
+        for idx, name in enumerate(o["CLIP"]):
+            self.setModel(name, "clip", "", "clip", idx)
+        self.finishCategory("CLIP", len(o["CLIP"]))
+
+        for idx, name in enumerate(o["VAE"]):
+            self.setModel(name, "vae", "", "vae", idx)
+        self.finishCategory("vae", len(o["VAE"]))
 
         for idx, name in enumerate(o["LoRA"]):
-            category = tp.get(name, "?")
-            self.setModel(name, "lora", category, "lora", idx)
+            self.setModel(name, "lora", "", "lora", idx)
         self.finishCategory("lora", len(o["LoRA"]))
 
-        for idx, name in enumerate(o["TI"]):
-            self.setModel(name, "embedding", "", "embedding", idx)
-        self.finishCategory("embedding", len(o["TI"]))
-
-        for idx, name in enumerate(o["SR"]):
+        for idx, name in enumerate(o.get("upscaler", [])):
             self.setModel(name, "upscaler", "", "upscaler", idx)
-        self.finishCategory("upscaler", len(o["SR"]))
-
-        for idx, name in enumerate(o["Detailer"]):
-            self.setModel(name, "detailer", "", "detailer", idx)
-        self.finishCategory("detailer", len(o["Detailer"]))
+        self.finishCategory("upscaler", len(o.get("upscaler", [])))
 
     def favouritesUpdated(self):
         f = self.gui._favourites
@@ -223,12 +175,11 @@ class Populater(QObject):
             if type(o[k]) == list:
                 o[k] = [a for a in o[k] if a in f]
 
-        checkpoints = [a for a in o["UNET"] if a in o["VAE"] and a in o["CLIP"]]
-        for name in checkpoints:
+        for name in o["UNET"]:
             self.setModel(name, "favourite", "Checkpoint", "checkpoint", idx, False)
             idx += 1
 
-        for name in [a for a in o["VAE"] if not a in checkpoints]:
+        for name in o["VAE"]:
             self.setModel(name, "favourite", "VAE", "component", idx, False)
             idx += 1
 
@@ -236,18 +187,9 @@ class Populater(QObject):
             self.setModel(name, "favourite", "LoRA", "lora", idx, False)
             idx += 1
 
-        for name in o["TI"]:
-            self.setModel(name, "favourite", "Embedding", "embedding", idx, False)
-            idx += 1
-
-        for name in o["SR"]:
+        for name in o.get("upscaler", []):
             self.setModel(name, "favourite", "Upscaler", "upscaler", idx, False)
             idx += 1
-
-        for name in o["Detailer"]:
-            self.setModel(name, "favourite", "Detailer", "detailer", idx, False)
-            idx += 1
-
         self.finishCategory("favourite", idx)
 
 

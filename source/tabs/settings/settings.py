@@ -150,16 +150,4 @@ class Settings(QObject):
             self._triedGitInit = True
             git.git_init(".", git.QDIFF_URL)
 
-        server_dir = os.path.join("source","sd-inference-server")
-        if os.path.exists(server_dir):
-            try:
-                commit, label = git.git_last(server_dir)
-            except:
-                pass
-            if commit:
-                if self._currentGitServerInfo == None:
-                    self._currentGitServerInfo = commit
-                self._gitServerInfo = label
-                self._needRestart = self._needRestart or (self._currentGitServerInfo != commit)
-
         self.updated.emit()

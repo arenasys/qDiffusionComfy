@@ -340,8 +340,8 @@ class RequestManager(QObject):
                 areas += [are]
             used += linked
 
-        batch_size = int(self.parameters._values.get("batch_size"))
-        batch_count = int(self.parameters._values.get("batch_count"))
+        batch_size = 1
+        batch_count = 1
 
         total = max([len(controls[k]) for k in controls]) if controls else 0
         total = max(len(images), batch_count * batch_size, total)
@@ -385,11 +385,9 @@ class RequestManager(QObject):
         requests = []
 
         seed = int(self.parameters._values.get("seed") or -1)
-        subseed = int(self.parameters._values.get("subseed") or -1)
+        subseed = -1
         if seed == -1:
             seed = random.randrange(2147483646)
-        if subseed == -1:
-            subseed = random.randrange(2147483646)
 
         for size, images, masks, areas, control in batches:
             request = self.parameters.buildRequest(size, seed, images, masks, areas, control)
@@ -397,10 +395,6 @@ class RequestManager(QObject):
             if "seed" in request["data"]:
                 request["data"]["seed"] = seed
                 seed += size
-
-            if "subseed" in request["data"]:
-                request["data"]["subseed"] = subseed
-                subseed += size
                         
             requests += [request]
 

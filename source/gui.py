@@ -719,6 +719,13 @@ class GUI(QObject):
     @pyqtSlot(str, result=str)
     def modelName(self, name):
         return name.rsplit(".",1)[0].rsplit(os.path.sep,1)[-1]
+
+    @pyqtSlot(str, result=str)
+    def modelSubfolder(self, name):
+        folder = name.rsplit(".",1)[0].rsplit(os.path.sep,1)[0]
+        if os.path.sep in folder:
+            return folder.rsplit(os.path.sep,1)[-1]
+        return ""
     
     def closestModel(self, name, models):
         if not models:

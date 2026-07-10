@@ -213,7 +213,7 @@ Item {
             }
 
             onDoubleClicked: {
-                BASIC.parameters.doToggle(sql_name)
+                BASIC.parameters.doToggle(sql_name, EXPLORER.currentTab)
             }
 
             onWheel: {
@@ -305,7 +305,7 @@ Item {
                 hoverEnabled: true
                 acceptedButtons: Qt.LeftButton
                 onDoubleClicked: {
-                    BASIC.parameters.doToggle(sql_name)
+                    BASIC.parameters.doToggle(sql_name, EXPLORER.currentTab)
                     modelCard.hide()
                 }
             }

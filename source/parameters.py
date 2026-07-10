@@ -17,7 +17,7 @@ LABELS = [
     ("negative_prompt", "Negative prompt"),
     ("steps", "Steps"),
     ("sampler", "Sampler"),
-    ("eta", "Eta"),
+    ("scheduler", "Scheduler"),
     ("scale", "CFG scale"),
     ("seed", "Seed"),
     ("size", "Size"),
@@ -25,33 +25,17 @@ LABELS = [
     ("UNET", "UNET"),
     ("VAE", "VAE"),
     ("CLIP", "CLIP"),
+    ("clip_type", "CLIP type"),
+    ("model_mode", "Model mode"),
     ("mode", "Mode"),
     ("inputs", "Inputs"),
-    ("subseed", "Variation seed"),
-    ("subseed_strength", "Variation seed strength"),
     ("strength", "Denoising strength"),
-    ("clip_skip", "Clip skip"),
-    ("hr_resize", "Hires resize"),
-    ("hr_factor", "Hires factor"),
-    ("hr_strength", "Hires strength"),
-    ("hr_upscaler", "Hires upscaler"),
-    ("hr_sampler", "Hires sampler"),
-    ("hr_steps", "Hires steps"),
-    ("hr_scale", "Hires CFG scale"),
-    ("hr_model", "Hires Model"),
-    ("hr_cfg_rescale", "Hires CFG rescale"),
-    ("hr_prediction_type", "Hires Prediction type"),
-    ("img2img_upscaler", "Upscaler"),
-    ("cfg_rescale", "CFG rescale"),
-    ("prediction_type", "Prediction type"),
-    ("detailers", "Detailers")
+    ("upscaler", "Upscaler")
 ]
 
 SETTABLE = [
-    "size", "prompt", "negative_prompt", "steps", "sampler", "schedule", "scale", "seed", "width", "height",
-    "model", "UNET", "VAE", "CLIP", "model", "subseed", "subseed_strength", "strength", "eta", "clip_skip", "img2img_upscaler",
-    "hr_factor", "hr_strength", "hr_upscaler", "hr_sampler", "hr_steps", "hr_scale", "hr_model",
-    "cfg_rescale", "prediction_type", "detailers"
+    "size", "prompt", "negative_prompt", "steps", "sampler", "scheduler", "scale", "seed", "width", "height",
+    "model", "UNET", "VAE", "CLIP", "clip_type", "model_mode", "model", "strength", "upscaler",
 ]
 
 def formatParameters(json):
@@ -358,31 +342,26 @@ class Parameters(QObject):
             self.gui.optionsUpdated.connect(self.optionsUpdated)
 
         self._client_only = [
-            "models", "samplers", "UNETs", "CLIPs", "VAEs", "SRs", "SR", "LoRAs", "LoRA", "TIs", "TI", "CN", "CNs", "hr_upscalers", "img2img_upscalers", 
-            "attentions", "device", "devices", "batch_count", "prompt", "negative_prompt", "vram_usages", "artifact_modes", "preview_modes", "schedules",
-            "CN_modes", "CN_preprocessors", "vram_modes", "true_samplers", "schedule", "network_modes", "model", "output_folder", "mask_fill_modes", "autocast_modes",
-            "prediction_types", "zsnr_modes", "tiling_modes", "precisions", "fetching_modes", "model_modes", "Refiners", "model_types", "Detailers", "Detailer"
+            "models", "samplers", "UNETs", "CLIPs", "VAEs", "LoRAs", "LoRA",
+            "device", "devices", "preview_modes", "schedulers",
+            "network_modes", "model", "output_folder", 
+            "model_types", "model_modes", "clip_types",
+            "upscalers"
         ]
 
         self._adv_only = [
-            "tome_ratio", "tiling_mode", "vae_precision", "precision", "subseed_strength", "subseed", 
-            "hr_sampler", "hr_scale"
+            
         ]
         self._default_values = {
-            "prompt":"", "negative_prompt":"", "width": 512, "height": 512, "steps": 25, "scale": 7.0, "strength": 0.5, "seed": -1, "eta": 1.0,
-            "hr_factor": 1.0, "hr_strength":  0.7, "hr_sampler": "Euler a", "hr_steps": 25, "hr_scale": 7.0, "clip_skip": 1, "batch_size": 1, "padding": -1, "mask_blur": 4, "mask_expand": 0, "subseed":-1, "subseed_strength": 0.0,
-            "sampler": "Euler a", "samplers":[], "hr_upscaler":"Lanczos", "hr_upscalers":[], "img2img_upscaler":"Lanczos", "img2img_upscalers":[],
-            "model":"", "models":[], "UNET":"", "UNETs":[], "CLIP":"", "CLIPs":[], "VAE":"", "VAEs":[], "LoRA":[], "LoRAs":[], "SR":[], "SRs":[], "TI":"", "TIs":[],
-            "attention":"", "attentions":[], "device":"", "devices":[], "batch_count": 1, "schedule": "Linear", "schedules": ["Linear", "Karras", "Exponential", "Uniform"],
-            "vram_mode": "Default", "vram_modes": ["Default", "Minimal"], "artifact_mode": "Disabled", "artifact_modes": ["Disabled", "Enabled"], "preview_mode": "Light",
-            "preview_modes": ["Disabled", "Light", "Medium", "Full"], "preview_interval":1, "true_samplers": [], "true_sampler": "Euler a",
-            "network_mode": "Static", "network_modes": ["Dynamic", "Static"], "mask_fill": "Original", "mask_fill_modes": ["Original", "Noise"],
-            "tome_ratio": 0.0, "hr_model": "", "cfg_rescale": 0.0, "output_folder": "", "autocast": "Disabled", "autocast_modes": ["Disabled", "Enabled"],
-            "CN_modes": ["Canny", "Depth", "Pose", "Lineart", "Softedge", "Anime", "M-LSD", "Instruct", "Shuffle", "Inpaint", "Scribble", "Normal", "Tile", "QR", "Anyline"],#, "Segmentation"]
-            "CN_preprocessors": ["None", "Invert", "Canny", "Depth", "Pose", "Lineart", "Softedge", "Anime", "M-LSD", "Shuffle", "Scribble", "Normal", "Anyline"],
-            "prediction_type": "Default", "prediction_types": ["Default", "Epsilon", "V"], "zsnr_mode": "Disabled", "zsnr_modes": ["Disabled", "Enabled"], "tiling_mode": "Disabled", "tiling_modes": ["Disabled", "Enabled"],
-            "precisions": ["FP16", "FP32"], "vae_precision": "FP16", "precision": "FP16", "fetching_mode": "Dont Wait", "fetching_modes": ["Wait", "Dont Wait"],
-            "model_mode": "Standard", "model_modes": ["Standard", "Refiner"], "Refiner": "", "Refiners": [], "model_types": {}, "Detailers": [], "Detailer": ""
+            "prompt":"", "negative_prompt":"", "width": 512, "height": 512, "steps": 25, "scale": 7.0, "strength": 0.5, "seed": -1,
+            "padding": -1, "mask_blur": 4, "mask_expand": 0,
+            "sampler": "", "samplers":[], "model":"", "models":[], "UNET":"", "UNETs":[], "CLIP":"", "CLIPs":[], "VAE":"", "VAEs":[], "LoRA":[], "LoRAs":[],
+            "upscaler": "default", "upscalers": ["default"],
+            "device":"", "devices":[], "scheduler": "", "schedulers": [],
+            "preview_mode": "Disabled", "preview_modes": ["Disabled", "Enabled"],
+            "output_folder": "", "model_types": {},
+            "model_mode": "checkpoint", "model_modes": ["checkpoint", "component"],
+            "clip_type": "stable_diffusion", "clip_types": [],
         }
 
         if source:
@@ -393,18 +372,10 @@ class Parameters(QObject):
         self._values.updated.connect(self.onUpdated)
         self._availableNetworks = []
         self._activeNetworks = []
-        self._activeDetailers = []
         self._active = []
-
-        if source:
-            self._activeDetailers = source._activeDetailers
 
     def resolution(self):
         w, h = self.values.get("width"), self.values.get("height")
-        if self.gui.config.get("always_hr_resolution", True):
-            factor = self.values.get("hr_factor")
-            w = int(w * factor)
-            h = int(h * factor)
         return QSize(w,h)
 
     @pyqtSlot()
@@ -432,10 +403,6 @@ class Parameters(QObject):
         return self._activeNetworks
     
     @pyqtProperty(list, notify=updated)
-    def activeDetailers(self):
-        return self._activeDetailers
-    
-    @pyqtProperty(list, notify=updated)
     def active(self):
         return self._active
     
@@ -460,16 +427,6 @@ class Parameters(QObject):
 
         self._values.set("prompt", positive)
         self._values.set("negative_prompt", negative)
-
-    @pyqtSlot(str)
-    def addDetailer(self, detailer):
-        self.doActivate(detailer)
-        self.getActive()
-
-    @pyqtSlot(int)
-    def deleteDetailer(self, index):
-        self.doDeactivate(self._activeDetailers[index])
-        self.getActive()
     
     @pyqtProperty(VariantMap, notify=updated)
     def values(self):
@@ -477,44 +434,11 @@ class Parameters(QObject):
 
     @pyqtSlot(str, 'QVariant', 'QVariant')
     def mapsUpdating(self, key, prev, curr):
-        changed = False
-        pairs = [("true_sampler", "hr_sampler"), ("steps", "hr_steps"), ("scale", "hr_scale"), ("UNET", "hr_model")]
-        for src, dst in pairs:
-            if key == src:
-                val = self._values.get(dst)
-                if val == prev or (type(val) == float and abs(val - prev) < 0.001):
-                    changed = True
-                    self._values.set(dst, curr)
-
-        if changed:
-            self.updated.emit()
+        return
 
     @pyqtSlot(str)
     def onUpdated(self, key):
         self.getActive()
-
-        if key != "sampler" and key != "schedule":
-            return
-
-        if key == "sampler":
-            sampler = self._values.get("sampler")
-            schedules = ["Linear", "Karras", "Exponential", "Uniform"]
-            default_scheduler = "Linear"
-
-            if sampler in {"DDIM", "PLMS"}:
-                schedules = ["Linear"]
-            elif "DPM" in sampler:
-                default_scheduler = "Karras"
-            
-            self._values.set("schedules", schedules)
-            self._values.set("schedule", default_scheduler)
-
-        true_sampler = self._values.get("sampler")
-        schedule = self._values.get("schedule")
-        if schedule and schedule != "Linear":
-            true_sampler += " " + schedule
-        self._values.set("true_sampler", true_sampler)
-        
 
     @pyqtSlot()
     def optionsUpdated(self):
@@ -525,7 +449,13 @@ class Parameters(QObject):
             kk = k + "s"
             if kk in self._values._map:
                 opts = self.gui._options[k]
-                if k in {"UNET", "CLIP", "VAE", "SR", "LoRA", "TI"}:
+                if k == "upscaler":
+                    opts = ["default"] + sorted(opts, key=lambda m: self.gui.modelName(m.lower()))
+                    self._values.set(kk, opts)
+                    if self._values.get(k) not in opts:
+                        self._values.set(k, "default")
+                    continue
+                if k in {"UNET", "CLIP", "VAE", "LoRA"}:
                     opts = sorted(opts, key=lambda m: self.gui.modelName(m.lower()))
                 self._values.set(kk, opts)
                 if (not self._values.get(k) or not self._values.get(k) in self.gui._options[k]) and self.gui._options[k]:                   
@@ -543,6 +473,13 @@ class Parameters(QObject):
 
         self._values.set("model_types", self.gui._options.get("model_types", {}))
 
+        clip_types = self.gui._options.get("clip_mode", [])
+        self._values.set("clip_types", clip_types)
+        if not self._values.get("clip_type") and clip_types:
+            self._values.set("clip_type", clip_types[0])
+
+        self._values.set("model_modes", ["checkpoint", "component"])
+
         unets = self._values.get("UNETs")
         unets = [u for u in unets if not u in models] + [u for u in unets if u in models]
         self._values.set("UNETs", unets)
@@ -555,15 +492,6 @@ class Parameters(QObject):
         clips = [c for c in clips if not c in models] + [c for c in clips if c in models]
         self._values.set("CLIPs", clips)
 
-        refiners = [c for c in unets if "refiner" in c.lower()]
-        refiner = self._values.get("Refiner")
-        self._values.set("Refiners", refiners)
-        if not refiners:
-            refiner = None
-        elif not refiner in refiners:
-            refiner = refiners[0]
-        self._values.set("Refiner", refiner)
-
         if models and (not self._values.get("model") or not self._values.get("model") in models):
             model = self.gui.filterFavourites(models)[0]
             self._values.set("model", model)
@@ -575,23 +503,9 @@ class Parameters(QObject):
         self._availableNetworks = self._values.get("LoRAs")
         self._activeNetworks = [n for n in self._activeNetworks if n in self._availableNetworks]
 
-        if self._values.get("img2img_upscaler") not in self._values.get("img2img_upscalers"):
-            self._values.set("img2img_upscaler", "Lanczos")
-
-        if self._values.get("hr_upscaler") not in self._values.get("hr_upscalers"):
-            self._values.set("hr_upscaler", "Lanczos")
-
         config = [
             ("device", "device", "devices"),
-            ("artifacts", "artifact_mode", "artifact_modes"),
             ("previews", "preview_mode", "preview_modes"),
-            ("preview_interval", "preview_interval", None),
-            ("vram", "vram_mode", "vram_modes"),
-            ("attention", "attention", "attentions"),
-            ("precision", "precision", "precisions"),
-            ("vae_precision", "vae_precision", "precisions"),
-            ("vae_tiling", "tiling_mode", "tiling_modes"),
-            ("fetching", "fetching_mode", "fetching_modes"),
             ("output_folder", "output_folder", None)
         ]
 
@@ -600,11 +514,8 @@ class Parameters(QObject):
             val = self.gui.config.get(cfg, None)
             if val and (not opts or val in self._values.get(opts)):
                 self._values.set(key, val)
-            elif cfg == "preview_interval" and remote:
-                self._values.set(key, 5)
 
-        self._values.set("true_samplers", self._values.get("samplers"))
-        self._values.set("samplers", [s for s in self._values.get("samplers") if not "Karras" in s and not "Exponential" in s and not "Uniform" in s])
+        self._values.set("samplers", self._values.get("samplers"))
 
         self.updated.emit()
 
@@ -621,164 +532,62 @@ class Parameters(QObject):
             if not k in self._client_only:
                 data[k] = v
 
-        data['batch_size'] = int(batch_size)
         data['seed'] = seed
-
-        data['prompt'] = self.buildPrompts(batch_size, seed)
-
-        data["sampler"] = data["true_sampler"]
-        del data["true_sampler"]
 
         if (data["steps"] == 0 or data["strength"] == 0.0) and images:
             request["type"] = "upscale"
-            data["image"] = images
+            data["image"] = [images[0]]
             if any(masks):
-                data["mask"] = masks
+                data["mask"] = [masks[0]]
         elif images:
             request["type"] = "img2img"
-            data["image"] = images
+            data["image"] = [images[0]]
             if any(masks):
-                data["mask"] = masks
+                data["mask"] = [masks[0]]
         else:
             request["type"] = "txt2img"
-        
-        if request["type"] == "txt2img" and self._activeDetailers:
-            data["detailers"] = self._activeDetailers
-            basic = self.gui.getBasicTab()
-            data["detailer_parameters"] = [
-                basic.detailers.getSettings(d) for d in self._activeDetailers
-            ]
 
-        if request["type"] != "txt2img" and self.gui.config.get("always_hr_resolution", True):
-            factor = data['hr_factor']
-            data['width'] = int(data['width'] * factor)
-            data['height'] = int(data['height'] * factor)
-
-        if any(areas):
-            s = len(self.subprompts)
-            for a in range(len(areas)):
-                if areas[a] and len(areas[a]) > s:
-                    areas[a] = areas[a][:s]
-            data["area"] = areas
-
-        if not request["type"] == "img2img" and not "area" in data:
+        if not request["type"] == "img2img":
             del data["mask_blur"]
             del data["mask_expand"]
-        if not "mask" in data:
-            del data["mask_fill"]
-
-        if data["hr_factor"] == 1.0:
-            for k in list(data.keys()):
-                if k.startswith("hr_"):
-                    del data[k]
-        else:
-            if data["hr_steps"] == data["steps"]:
-                del data["hr_steps"]
-            if data["hr_sampler"] == data["sampler"]:
-                del data["hr_sampler"]
-            if data["hr_scale"] == data["scale"]:
-                del data["hr_scale"]
-            if data["hr_model"] == data["UNET"]:
-                del data["hr_model"]
-            else:
-                hr_model_name = self.gui.modelName(data["hr_model"])
-                defaults = self.gui.getDefaults(hr_model_name)
-                for k,v in defaults.items():
-                    kk = "hr_" + k
-                    data[kk] = v
-        
-        if not request["type"] in {"img2img", "upscale"}:
-            del data["img2img_upscaler"]
-        
-        if data["eta"] == 1.0:
-            del data["eta"]
 
         if data["padding"] == -1:
-            if "detailers" in data:
-                data["padding"] = 32
-            else:
-                del data["padding"]
-        
-        if data["subseed_strength"] == 0.0:
-            del data["subseed"]
-            del data["subseed_strength"]
+            del data["padding"]
 
         data["device_name"] = self._values.get("device")
-
-        if control:
-            images = []
-            opts = []
-            models = []
-
-            for m,o,i in control:
-                models += [m]
-                opts += [o]
-                images += [i]
-
-            if "Tile" in models:
-                opts = opts[models.index("Tile")]
-                data["tile_strength"] = opts["scale"]
-                data["tile_size"] = opts["args"][0]
-                data["tile_upscale"] = opts["args"][1]
-                data["tile_guess"] = opts["guess"]
-            else:
-                data["cn_image"] = images
-                data["cn"] = models
-                data["cn_opts"] = opts
 
         if request["type"] != "img2img" and "strength" in data:
             del data["strength"]
 
-        if data["artifact_mode"] == "Enabled":
-            data["keep_artifacts"] = True
-        del data["artifact_mode"]
-
-        if request["type"] in {"txt2img", "img2img", "upscale"} and self.gui.isRemote:
-            if data["fetching_mode"] == "Dont Wait":
-                data["delay_fetch"] = True
-        del data["fetching_mode"]
-
-        if data["preview_mode"] != "Disabled":
-            data["show_preview"] = data["preview_mode"]
+        data["preview"] = data["preview_mode"] == "Enabled"
         del data["preview_mode"]
-
-        for k in self._adv_only:
-            if k in data and not self.gui.config.get("advanced"):
-                del data[k]
-
-        if not self.gui.config.get("advanced") and data["prediction_type"] != "V":
-            del data["cfg_rescale"]
-
-        for k in ["tome_ratio", "cfg_rescale", "prediction_type", "tiling_mode", "vae_precision", "precision"]:
-            for p in ["", "hr_"]:
-                kk = p + k
-                if kk in data and data[kk] in {0.0, "Default"}:
-                    del data[kk]
-
-        data["autocast"] = data["autocast"] == "Enabled"
 
         if request["type"] == "upscale":
             for k in list(data.keys()):
-                if not k in {"img2img_upscaler", "width", "height", "image", "mask", "mask_blur", "padding", "device_name"}:
+                if not k in {"width", "height", "image", "mask", "mask_blur", "padding", "device_name", "upscaler"}:
                     del data[k]
 
-        if "Refiner" in data and data["model_mode"] != "Refiner":
-            del data["Refiner"]
-        
+        # Remove upscaler from txt2img requests and when Default is selected.
+        if request["type"] == "txt2img" or data.get("upscaler") == "default":
+            data.pop("upscaler", None)
+
+        # Model loading: checkpoint mode sends a single "checkpoint" key (the
+        # UNET value, since all checkpoints are unets).  Component mode sends
+        # unet/clip/vae/clip_type separately.
+        model_mode = data.pop("model_mode", "checkpoint")
+        if request["type"] != "upscale":
+            if model_mode == "checkpoint":
+                data["checkpoint"] = data.pop("UNET", "")
+                for k in ("CLIP", "VAE", "clip_type"):
+                    data.pop(k, None)
+            else:
+                data["clip_type"] = data.get("clip_type", "stable_diffusion")
+
         data = {k.lower():v for k,v in data.items()}
 
         request["data"] = data
 
         return request
-
-    def buildAnnotateRequest(self, mode, args, image):
-        data = {
-            "cn_image": [image],
-            "cn_annotator": [mode],
-            "cn_args": [args],
-            "device_name": self._values.get("device")
-        }
-        return {"type":"annotate", "data": data}
 
     @pyqtSlot()
     def reset(self):
@@ -816,32 +625,26 @@ class Parameters(QObject):
                 }
             
             if p._name == "sampler":
-                if p._value in self._values._map["true_samplers"]:
-                    if p._value.endswith(" Karras"):
-                        sampler = p._value.rsplit(" ",1)[0]
-                        schedule = "Karras"
-                    elif p._value.endswith(" Exponential"):
-                        sampler = p._value.rsplit(" ",1)[0]
-                        schedule = "Exponential"
-                    elif p._value.endswith(" Uniform"):
-                        sampler = p._value.rsplit(" ",1)[0]
-                        schedule = "Uniform"
-                    else:
-                        sampler = p._value
-                        schedule = "Linear"
-
+                if p._value in self._values._map["samplers"]:
                     entries = {
-                        "sampler": (sampler, p._checked),
-                        "schedule": (schedule, p._checked)
+                        "sampler": (p._value, p._checked),
                     }
                 else:
-                    del entries[p._name]
+                    del entries["sampler"]
+
+            if p._name == "scheduler":
+                if p._value in self._values._map["schedulers"]:
+                    entries = {
+                        "scheduler": (p._value, p._checked),
+                    }
+                else:
+                    del entries["scheduler"]
             
             if p._name == "model":
                 entries = {
                     "UNET": (p._value, p._checked),
                     "CLIP": (p._value, p._checked),
-                    "VAE": (p._value, p._checked),
+                    "VAE": (p._value, p._checked)
                 }
             
             for n in entries:
@@ -849,8 +652,16 @@ class Parameters(QObject):
         
         reset = processed["reset"][1]
         del processed["reset"]
-        
-        for k in ["UNET", "CLIP", "VAE", "hr_model"]:
+
+        # Switch model mode based on which model keys were loaded: component
+        # mode if UNET/CLIP/VAE keys are present, checkpoint mode otherwise.
+        loaded_names = {p._name for p in params}
+        if any(k in loaded_names for k in ("UNET", "CLIP", "VAE")):
+            processed["model_mode"] = ("component", True)
+        elif "model" in loaded_names:
+            processed["model_mode"] = ("checkpoint", True)
+
+        for k in ["UNET", "CLIP", "VAE"]:
             if not k in processed:
                 continue
 
@@ -868,7 +679,7 @@ class Parameters(QObject):
             value, checked = processed["UNET"]
             processed["model"] = (value, checked)
 
-        for k in ["img2img_upscaler", "hr_upscaler"]:
+        for k in ["upscaler"]:
             if not k in processed:
                 continue
 
@@ -888,35 +699,10 @@ class Parameters(QObject):
                 value = processed[name][0]
             
             if value == None and reset:
-                if name == "hr_steps":
-                    value = self.values.get("steps")
-                elif name == "hr_sampler":
-                    value = self.values.get("sampler")
-                elif name == "hr_scale":
-                    value = self.values.get("scale")
-                elif name == "detailers":
-                    for d in self._activeDetailers:
-                        self.doDeactivate(d)
-
-                elif name in self._default_values:
+                if name in self._default_values:
                     value = self._default_values.get(name)
 
-
             if value == None:
-                continue
-
-            if name == "detailers":
-                available = self._values._map["Detailers"]
-                value = [v.strip() for v in value.split(",")]
-                value = [self.gui.closestModel(v, available) for v in value]
-                value = [v for v in value if v]
-                if not value:
-                    continue
-
-                for d in [d for d in self._activeDetailers if not d in value]:
-                    self.doDeactivate(d)
-                for d in [d for d in value if not d in self._activeDetailers]:
-                    self.doActivate(d)
                 continue
 
             try:
@@ -990,35 +776,16 @@ class Parameters(QObject):
             for lora in self._values.get("LoRAs"):
                 if lora_match[0] == lora.rsplit(os.path.sep,1)[-1].rsplit(".",1)[0]:
                     self._active += [lora]
-        
-        for w_match in re.findall(r"@?__([^\s]+?)__(?!___)", prompt):
-            if w_match in self.gui.wildcards._wildcards:
-                file = self.gui.wildcards._sources[w_match]
-                self._active += [os.path.join("WILDCARD", file)]
 
-        for emb in self._values.get("TIs"):
-            if self.gui.modelName(emb) in prompt:
-                self._active += [emb]
-
-        for model in [self._values.get(m) for m in ["UNET", "VAE", "CLIP"]]:
+        for model in [self._values.get(m) for m in ["UNET", "VAE", "CLIP", "upscaler"]]:
             if model and not model in self._active:
                 self._active += [model]
-        
-        hr = self._values.get("hr_upscaler")
-        img = self._values.get("img2img_upscaler")
-        sr = self._values.get("SRs")
-        if hr in sr:
-            self._active += [hr]
-        if img in sr:
-            self._active += [img]
-
-        self._active += self._activeDetailers
 
         if set(self._active) != last:
             self.updated.emit()
 
     @pyqtSlot(str)
-    def doActivate(self, file):
+    def doActivate(self, file, model_type=None):
         def append(s, key="prompt"):
             prompt = self._values.get(key)
             if prompt:
@@ -1027,30 +794,27 @@ class Parameters(QObject):
         
         name = self.gui.modelName(file)
 
-        for m in ["UNET", "VAE", "CLIP"]:
-            if file in self._values.get(m + "s"):
-                self._values.set(m, file)
-        self._values.set("model", self._values.get("UNET"))
-
         if file in self._values.get("LoRAs"):
             append(f"<lora:{name}>")
+            return
 
-        if file in self._values.get("TIs"):
-            if "neg" in file.rsplit(os.path.sep, 1)[0].lower():
-                append(name, "negative_prompt")
-            else:
-                append(name)
+        if file in self._values.get("upscalers"):
+            self._values.set("upscaler", file)
+            return
 
-        if file in self._values.get("SRs"):
-            self._values.set("hr_upscaler", file)
-            self._values.set("img2img_upscaler", file)
-
-        name = file.split(os.path.sep,1)[-1].rsplit('.',1)[0].replace(os.path.sep, "/")
-        if file.startswith("WILDCARD") and name in self.gui.wildcards._wildcards:
-            append(f"__{name}__")
-        
-        if file in self._values.get("Detailers") and not file in self._activeDetailers:
-            self._activeDetailers += [file]
+        if model_type == "checkpoint":
+            self._values.set("model_mode", "checkpoint")
+            self._values.set("UNET", file)
+            self._values.set("CLIP", file)
+            self._values.set("VAE", file)
+        else:
+            self._values.set("model_mode", "component")
+            for m in ["UNET", "VAE", "CLIP"]:
+                opts = self._values.get(m + "s")
+                if file in opts:
+                    self._values.set(m, file)
+                else:
+                    self._values.set(m, opts[0])
         
     @pyqtSlot(str)
     def doDeactivate(self, file):
@@ -1070,26 +834,15 @@ class Parameters(QObject):
         if file in self._values.get("LoRAs"):
             remove(fr"<@?lora:({re.escape(name)})(?::([-\d.]+))?(?::([-\d.]+))?>")
 
-        if file in self._values.get("TIs"):
-            remove(fr"{re.escape(name)}")
+        if file == self._values.get("upscaler"):
+            self._values.set("upscaler", "default")
 
-        if file in self._values.get("SRs"):
-            self._values.set("hr_upscaler", "Latent (nearest)")
-            self._values.set("img2img_upscaler", "Lanczos")
-
-        name = file.split(os.path.sep,1)[-1].rsplit('.',1)[0].replace(os.path.sep, "/")
-        if file.startswith("WILDCARD") and name in self.gui.wildcards._wildcards:
-            remove(fr"__{re.escape(name)}__")
-
-        if file in self._activeDetailers:
-            self._activeDetailers.remove(file)
-
-    @pyqtSlot(str)
-    def doToggle(self, file):
+    @pyqtSlot(str, str)
+    def doToggle(self, file, model_type=None):
         if file in self._active:
             self.doDeactivate(file)
         else:
-            self.doActivate(file)
+            self.doActivate(file, model_type)
         
         self.getActive()
 

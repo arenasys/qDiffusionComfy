@@ -17,7 +17,7 @@ Item {
     }
 
     function map(type) {
-        return {"Checkpoint":"SD", "LoRA":"LoRA", "Embedding":"TI", "Upscaler":"SR", "Detailer":"Detailer"}[type]
+        return {"UNET":"diffusion_models", "CLIP":"text_encoders", "VAE":"vae", "LoRA":"loras"}[type]
     }
 
     property var show: GUI.isRemote && GUI.remoteStatus == 2
@@ -108,7 +108,7 @@ Item {
                 width: 140
                 height: 30
                 label: root.tr("Type")
-                entries: ["Checkpoint", "LoRA", "Embedding", "Upscaler", "Detailer"]//["SD", "LoRA", "TI", "SR"]
+                entries: ["UNET", "CLIP", "VAE", "LoRA"]
                 disabled: !root.show
             }
             OTextInput {
@@ -213,7 +213,7 @@ Item {
                 width: 140
                 height: 30
                 label: root.tr("Type")
-                entries: ["Checkpoint", "LoRA", "Embedding", "Upscaler", "Detailer"]
+                entries: ["UNET", "CLIP", "VAE", "LoRA"]
                 disabled: !root.show
             }
             OTextInput {

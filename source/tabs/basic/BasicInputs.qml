@@ -75,8 +75,6 @@ Item {
                 clip: false
 
                 property var highlight: activeFocus || inputContextMenu.opened || inputFileDialog.visible || centerDrop.containsDrag
-                property var settings: false
-                property var hasSettings: modelData.role == 4 || modelData.role == 5
                 
                 Item {
                     anchors.fill: parent
@@ -436,28 +434,6 @@ Item {
                             color: COMMON.fg1_5
                             pointSize: 9.2
                         }
-
-                        Rectangle {
-                            anchors.bottom: parent.bottom
-                            anchors.left: parent.left
-                            width: 21
-                            height: 22
-                            visible: settingsButton.visible
-                            color: "#e0101010"
-                            border.width: 1
-                            border.color: COMMON.bg3
-                        }
-
-                        Rectangle {
-                            anchors.bottom: parent.bottom
-                            anchors.right: parent.right
-                            width: 21
-                            height: 22
-                            visible: refreshButton.visible
-                            color: "#e0101010"
-                            border.width: 1
-                            border.color: COMMON.bg3
-                        }
                     }
 
                     Rectangle {
@@ -569,35 +545,6 @@ Item {
                                     modelData.role = 2
                                 }
                             }
-                            SContextMenu {
-                                title: root.tr("Control", "Role")
-                                width: 100
-                                Repeater {
-                                    id: controlRepeater
-                                    property var tmp: BASIC.parameters.values.get("CN_modes")
-                                    model: tmp
-                                    SContextMenuItem {
-                                        text: root.tr(modelData, "Role")
-                                        onPressed: {
-                                            item.input.role = 4
-                                            item.input.controlSettings.set("mode", modelData)
-                                        }
-                                    }
-                                }
-                                SContextMenuItem {
-                                    visible: BASIC.parameters.values.get("CN_modes").length == 0
-                                    text: root.tr("Download")
-                                    onPressed: {
-                                        GUI.openLink("https://huggingface.co/lllyasviel/ControlNet-v1-1/tree/main")
-                                    }
-                                }
-                            }
-                            SContextMenuItem {
-                                text: root.tr("Segment", "Role")
-                                onPressed: {
-                                    modelData.role = 5
-                                }
-                            }
                         }
                     }
 
@@ -617,7 +564,7 @@ Item {
                 Item {
                     visible: modelData.warning != ""
                     x: borderFrame.x + 1
-                    y: borderFrame.y + borderFrame.height - (settingsArea.visible ? settingsArea.height : (settingsButton.visible ? 21 : 1)) - height
+                    y: borderFrame.y + borderFrame.height - height
                     height: 22
                     width: 20
                     clip: true
@@ -663,64 +610,6 @@ Item {
                     }
                 }
 
-                Rectangle {
-                    anchors.bottom: refreshButton.bottom
-                    anchors.right: refreshButton.right
-                    anchors.bottomMargin: 1
-                    anchors.rightMargin: 1
-                    height: Math.min(settingsArea.height-2, 21)
-                    width: 21
-                    visible: !refreshButton.visible && settingsArea.visible
-                    color: "#e0101010"
-                    border.width: 0
-                    border.color: COMMON.bg3
-                }
-
-                Rectangle {
-                    visible: settingsArea.visible
-                    x: borderFrame.x + 1
-                    y: borderFrame.y + borderFrame.height - settingsArea.height
-                    width: borderFrame.width - 2
-                    height: settingsArea.height - 22
-                    color: "#e0101010"
-                }
-
-                SIconButton {
-                    id: settingsButton
-                    visible: parent.hasSettings && modelData.hasSource
-                    color: "transparent"
-                    icon: "qrc:/icons/settings.svg"
-                    x: borderFrame.x + 1
-                    y: borderFrame.y + borderFrame.height - 20.5
-                    height: 20
-                    width: 20
-                    inset: 5
-
-                    onPressed: {
-                        parent.settings = !parent.settings
-                    }
-                }
-
-                SIconButton {
-                    id: refreshButton
-                    visible: modelData.canAnnotate && !modelData.empty
-                    color: "transparent"
-                    icon: "qrc:/icons/refresh.svg"
-                    x: borderFrame.x + borderFrame.width - 20
-                    y: borderFrame.y + borderFrame.height - 20
-                    height: 20
-                    width: 20
-                    inset: 5
-
-                    onPressed: {
-                        modelData.annotate()
-                    }
-
-                    onContextMenu: {
-                        modelData.resetDisplay()
-                    }
-                }
-
                 Column {
                     anchors.centerIn: parent
                     spacing: 5
@@ -733,32 +622,15 @@ Item {
                             itemFrame.forceActiveFocus()
                             inputFileDialog.open()
                         }
-                        onContextMenu: {
-                            fileContextMenu.open()
-                        }
                         border.color: COMMON.bg4
                         border.width: 1
                         color: COMMON.bg1
-
-                        SContextMenu {
-                            y: 34
-                            id: fileContextMenu
-                            width: 110
-                            clipShadow: true
-                            SContextMenuItem {
-                                text: root.tr("Bulk")
-                                onPressed: {
-                                    itemFrame.forceActiveFocus()
-                                    inputFolderDialog.open()
-                                }
-                            }
-                        }
                     }
 
                     SIconButton {
                         visible: !modelData.hasSource && modelData.canPaint
                         id: paintButton
-                        icon: modelData.isPose ? "qrc:/icons/person.svg" : "qrc:/icons/paint.svg"
+                        icon: "qrc:/icons/paint.svg"
                         onPressed: {
                             itemFrame.forceActiveFocus()
                             modelData.setImageCanvas()
@@ -766,163 +638,6 @@ Item {
                         border.color: COMMON.bg4
                         border.width: 1
                         color: COMMON.bg1
-                    }
-                }
-
-                Item {
-                    id: settingsArea
-                    visible: parent.settings && modelData.hasSource && modelData.hasSettings
-                    x: borderFrame.x + 20
-                    y: borderFrame.y + borderFrame.height - height
-                    width: borderFrame.width - 40
-                    height: settingsColumn.implicitHeight + 2
-                    clip: true
-                    
-                    Rectangle {
-                        anchors.fill: parent
-                        anchors.margins: 1
-                        color: COMMON.bg0
-                    }
-
-                    Column {
-                        id: settingsColumn
-                        anchors.fill: parent
-                        opacity: 0.85
-                        OChoice {
-                            label: root.tr("Preprocessor")
-                            width: parent.width
-                            visible: modelData.role == 4 && !modelData.isTile
-                            height: visible ? 22 : 0
-
-                            bindMap: modelData.controlSettings
-                            bindKeyCurrent: "preprocessor"
-                            bindKeyModel: "preprocessors"
-                        }
-                        OChoice {
-                            visible: label != ""
-                            width: parent.width
-                            height: visible ? 22 : 0
-
-                            bindMap: modelData.controlSettings
-                            bindKeyCurrent: "bool"
-                            bindKeyModel: "bools"
-                            bindKeyLabel: "bool_label"
-
-                            function label_display(text) {
-                                return root.tr(text)
-                            }
-                        }
-                        OSlider {
-                            visible: label != ""
-                            width: parent.width
-                            height: visible ? 22 : 0
-
-                            bindMap: modelData.controlSettings
-                            bindKey: "slider_a"
-                            bindKeyLabel: "slider_a_label"
-
-                            property var tile: modelData.isTile
-
-                            function label_display(text) {
-                                return root.tr(text)
-                            }
-
-                            minValue: tile ? 256 : 0
-                            maxValue: tile ? 1024 : 1
-                            precValue: tile ? 0 : 2
-                            incValue: tile ? 8 : 0.01
-                            snapValue: tile ? 64 : 0.05
-                            bounded: tile ? false : true
-                        }
-                        OSlider {
-                            visible: label != ""
-                            width: parent.width
-                            height: visible ? 22 : 0
-
-                            bindMap: modelData.controlSettings
-                            bindKey: "slider_b"
-                            bindKeyLabel: "slider_b_label"
-
-                            property var tile: modelData.isTile
-
-                            function label_display(text) {
-                                return root.tr(text)
-                            }
-
-                            minValue: tile ? 1 : 0
-                            maxValue: tile ? 2 : 1
-                            precValue: 2
-                            incValue: 0.01
-                            snapValue: 0.05
-                            bounded: tile ? false : true
-                        }
-                        OSlider {
-                            width: parent.width
-                            visible: modelData.role == 4
-                            height: visible ? 22 : 0
-                            label: root.tr("Strength")
-
-                            bindMap: modelData.controlSettings
-                            bindKey: "strength"
-
-                            minValue: 0
-                            maxValue: 1
-                            precValue: 2
-                            incValue: 0.01
-                            snapValue: 0.05
-                            bounded: true
-                        }
-                        OSlider {
-                            width: parent.width
-                            visible: modelData.role == 4
-                            height: visible ? 22 : 0
-                            label: root.tr("Stop threshold")
-
-                            bindMap: modelData.controlSettings
-                            bindKey: "stop"
-
-                            minValue: 0
-                            maxValue: 1
-                            precValue: 2
-                            incValue: 0.01
-                            snapValue: 0.05
-                            bounded: true
-                        }
-                        OChoice {
-                            width: parent.width
-                            visible: modelData.role == 4
-                            height: visible ? 22 : 0
-                            label: root.tr("Guess Mode")
-
-                            bindMap: modelData.controlSettings
-                            bindKeyCurrent: "guess"
-                            bindKeyModel: "bools"
-
-                        }
-                        OChoice {
-                            width: parent.width
-                            visible: height != 0
-                            height: modelData.role == 5 ? 22 : 0
-                            label: root.tr("Model")
-                            model: modelData.segmentationModels
-                            
-                            onValueChanged: {
-                                modelData.segmentationModel = value
-                            }
-
-                            function decoration(value) {
-                                if(value == "SAM-ViT-H") {
-                                    return root.tr("2.4GB")
-                                }
-                                if(value == "SAM-ViT-L") {
-                                    return root.tr("1.2GB")
-                                }
-                                if(value == "SAM-ViT-B") {
-                                    return root.tr("360MB")
-                                }
-                                return ""
-                            }
-                        }
                     }
                 }
 
@@ -1096,43 +811,6 @@ Item {
                             text: root.tr("Mask", "Role")
                             onPressed: {
                                 BASIC.addMask()
-                                addContextMenu.close()
-                            }
-                        }
-                        SContextMenuItem {
-                            text: root.tr("Subprompts", "Role")
-                            onPressed: {
-                                BASIC.addSubprompt()
-                                addContextMenu.close()
-                            }
-                        }
-                        SContextMenu {
-                            title: root.tr("Control", "Role")
-                            width: 100
-                            Repeater {
-                                id: controlRepeater
-                                property var tmp: BASIC.parameters.values.get("CN_modes")
-                                model: tmp
-                                SContextMenuItem {
-                                    text: root.tr(modelData, "Role")
-                                    onPressed: {
-                                        BASIC.addControl(modelData)
-                                        addContextMenu.close()
-                                    }
-                                }
-                            }
-                            SContextMenuItem {
-                                visible: BASIC.parameters.values.get("CN_modes").length == 0
-                                text: root.tr("Download")
-                                onPressed: {
-                                    GUI.openLink("https://huggingface.co/lllyasviel/ControlNet-v1-1/tree/main")
-                                }
-                            }
-                        }
-                        SContextMenuItem {
-                            text: root.tr("Segment", "Role")
-                            onPressed: {
-                                BASIC.addSegment()
                                 addContextMenu.close()
                             }
                         }

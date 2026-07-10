@@ -422,24 +422,6 @@ Item {
             }
         }
 
-        PoseEditor {
-            id: poseEditor
-            visible: root.posing
-            anchors.fill: parent
-
-            area.x: item.x
-            area.y: item.y
-            area.width: item.width
-            area.height: item.height
-
-            target: root.target != null && root.posing ? root.target : null
-            poses: root.target != null && root.posing ? root.target.poses : []
-
-            function close() {
-                root.close()
-            }
-        }
-
         Item {
             id: rings
             visible: root.editing && !root.artifact && mousePosition != Qt.point(0,0)

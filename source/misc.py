@@ -1201,7 +1201,7 @@ GRID_TYPES = {
 
 GRID_OPTIONS = {
     "Sampler":"true_samplers",
-    "Upscaler":"hr_upscalers",
+    "Upscaler":"upscalers",
     "Model":"models",
     "UNET":"UNETs",
     "CLIP":"CLIPs",
@@ -1272,7 +1272,7 @@ class GridManager(QObject):
                 prefix = ""
                 values = [{"UNET":v, "CLIP":v, "VAE":v} for v in inputs]
             if type == "Upscaler":
-                values = [{"img2img_upscaler":v, "hr_upscaler":v} for v in inputs]
+                values = [{"upscaler":v} for v in inputs]
             if type == "Sampler":
                 prefix = ""
                 values = [{"true_sampler":v} for v in inputs]

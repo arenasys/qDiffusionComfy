@@ -46,12 +46,8 @@ Item {
             id: columnContent
             width: 150
 
-            CategoryButton {
-                mode: "favourite"
-            }
-
             Repeater {
-                model: ["checkpoint", "component", "lora", "embedding", "upscaler", "detailer", "wildcard"]
+                model: ["checkpoint", "unet", "clip", "vae", "lora", "upscaler"]
 
                 Column {
                     width: 150
