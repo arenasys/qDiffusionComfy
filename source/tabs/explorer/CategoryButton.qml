@@ -18,7 +18,7 @@ SColumnButton {
 
     property var mode
     label: root.tr(EXPLORER.getLabel(mode), "Category")
-    active: EXPLORER.currentTab == mode
+    active: EXPLORER.currentTab == mode || basicDrop.containsDrag
 
     signal move(string model, string folder, string subfolder)
     
@@ -29,20 +29,6 @@ SColumnButton {
     AdvancedDropArea {
         id: basicDrop
         anchors.fill: parent
-        onContainsDragChanged: {
-            if(containsDrag) {
-                dragTimer.start()
-            } else {
-                dragTimer.stop()
-            }
-        }
-        Timer {
-            id: dragTimer
-            interval: 200
-            onTriggered: {
-                EXPLORER.setCurrent(mode, "")
-            }
-        }
         onDropped: {
             var model = EXPLORER.onDrop(mimeData)
             if(model != "") {

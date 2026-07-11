@@ -31,14 +31,12 @@ import parameters
 NAME = "qComfy"
 
 MODEL_FOLDERS = {
-    "checkpoint": ["SD", "Stable-diffusion"],
-    "component": ["SD", "Stable-diffusion", "VAE"],
-    "upscaler": ["SR", "ESRGAN", "RealESRGAN"], 
-    "embedding": ["TI", "embeddings", os.path.join("..", "embeddings")], 
-    "lora": ["LoRA"],
-    "wildcard": ["WILDCARD"],
-    "controlnet": ["CN"],
-    "detailer": ["Detailer"]
+    "checkpoint": ["diffusion_models"],
+    "unet": ["diffusion_models"],
+    "clip": ["text_encoders"],
+    "vae": ["vae"],
+    "lora": ["loras"],
+    "upscaler": ["upscale_models"],
 }
 
 class StatusMode(Enum):

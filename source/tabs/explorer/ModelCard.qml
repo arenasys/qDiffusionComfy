@@ -67,7 +67,6 @@ Item {
                     modelCard.setSelected(false)
                     modelCard.editing = false
                     modelCard.showing = grid.showInfo
-                    descText.text = Qt.binding(function() { return descText.processedText; })
                     labelTextEdit.text = GUI.modelFileName(sql_name)
                 }
             }
@@ -102,11 +101,6 @@ Item {
             modelCard.editing = false
         }
 
-        LoadingSpinner {
-            anchors.fill: parent
-            running: thumbnail.visible && thumbnail.status !== Image.Ready
-        }
-
         Item {
             id: interior
             anchors.top: typeBg.visible ? typeBg.bottom : parent.top
@@ -122,7 +116,6 @@ Item {
 
             Image {
                 id: placeholder
-                visible: !modelCard.desc
                 source: "qrc:/icons/placeholder_black.svg"
                 height: parent.width/4
                 width: height
@@ -138,59 +131,6 @@ Item {
             }
         }
 
-        Image {
-            id: thumbnail
-            visible: sql_width != 0 && !modelCard.info
-            anchors.fill: parent
-            anchors.margins: 1
-            property var trueSource: visible ? ((GUI.isCached(sql_file) ? "image://sync/" : "image://async/") + sql_file) : ""
-            source: trueSource
-            fillMode: Image.PreserveAspectCrop
-            cache: false
-        }
-
-        Image {
-            id: fullThumbnail
-            visible: sql_width != 0 && height >= 256 && !modelCard.info
-            anchors.fill: parent
-            anchors.margins: 1
-            property var trueSource: visible ? ("image://big/" + sql_file) : ""
-            source: trueSource
-            fillMode: Image.PreserveAspectCrop
-            cache: false
-        }
-
-        Item {
-            id: descItem
-            visible: modelCard.desc
-            anchors.fill: interior
-            anchors.margins: 1
-
-            STextArea {
-                id: descText
-                anchors.fill: parent
-                readOnly: !modelCard.editing
-                pointSize: 9.8
-                area.color: COMMON.fg2
-                area.textFormat: TextEdit.AutoText
-                property var shortText: (sql_desc.length > grid.descLength ? sql_desc.substring(0, grid.descLength) + "..." : sql_desc)
-                property var longText: (sql_desc.length > 10*grid.descLength ? sql_desc.substring(0, 10*grid.descLength) + "..." : sql_desc)
-                property var processedText: modelCard.selected ? longText : shortText
-                text: descItem.visible ? processedText : ""
-                scrollBar.opacity: 0.5
-                scrollBar.color: COMMON.fg3
-
-                area.onActiveFocusChanged: {
-                    if(area.activeFocus) {
-                        contextMenu.input = descText.area
-                        modelCard.select()
-                    }
-                }
-                area.onLinkActivated: {
-                    GUI.openLink(link)
-                }
-            }
-        }
         MouseArea {
             id: mouseArea
             anchors.fill: parent
@@ -201,13 +141,6 @@ Item {
             property var startPosition: null
 
             onPressed: {
-                var now = Date.now()
-                if(descItem.visible) {
-                    if(now - last >= 200) {
-                        mouse.accepted = false
-                    }
-                }
-                last = now
                 modelCard.select()
                 startPosition = Qt.point(mouse.x, mouse.y)
             }
@@ -380,45 +313,6 @@ Item {
 
             property var input: null
 
-
-            SContextMenuItem {
-                text: "Cut"
-                visible: modelCard.editing
-                height: visible ? 20 : 0
-                onPressed: {
-                    if(contextMenu.input) {
-                        contextMenu.input.cut()
-                    }
-                }
-            }
-
-            SContextMenuItem {
-                text: "Copy"
-                visible: modelCard.editing
-                height: visible ? 20 : 0
-                onPressed: {
-                    if(contextMenu.input) {
-                        contextMenu.input.copy()
-                    }
-                }
-            }
-
-            SContextMenuItem {
-                text: "Paste"
-                visible: modelCard.editing
-                height: visible ? 20 : 0
-                onPressed: {
-                    if(contextMenu.input) {
-                        contextMenu.input.paste()
-                    }
-                }
-            }
-
-            SContextMenuSeparator {
-                visible: modelCard.editing
-                height: visible ? 11 : 0
-            }
-
             SContextMenuItem {
                 text: modelCard.editing ? root.tr("Save", "General") : root.tr("Edit", "General")
                 onPressed: {
@@ -439,32 +333,6 @@ Item {
             }
 
             SContextMenuSeparator {}
-
-            SContextMenuItem {
-                text: root.tr("Visit", "General")
-                onPressed: {
-                    EXPLORER.doVisit(sql_name)
-                }
-            }
-
-            SContextMenuItem {
-                text: root.tr("Clear", "General")
-                onPressed: {
-                    EXPLORER.doClear(sql_file)
-                    root.changed()
-                }
-            }
-
-            SContextMenuSeparator {}
-
-            SContextMenuItem {
-                visible: sql_type != "wildcard"
-                height: visible ? 20 : 0
-                text: root.tr("Prune")
-                onPressed: {
-                    EXPLORER.doPrune(sql_name)
-                }
-            }
 
             SContextMenuItem {
                 text: root.tr("Delete", "General")

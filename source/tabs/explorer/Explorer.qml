@@ -59,8 +59,12 @@ Item {
                     }
                     SubfolderList {
                         mode: modelData
+                        showPhantomFolder: newSubfolderDialog.visible
                         onMove: {
                             moveDialog.show(model, folder, subfolder)
+                        }
+                        onCreateSubfolder: {
+                            newSubfolderDialog.show(model, folder)
                         }
                     }
                 }
@@ -251,6 +255,49 @@ Item {
 
         onAccepted: {
             EXPLORER.doMove(moveDialog.model, moveDialog.folder, moveDialog.subfolder)
+        }
+
+        onClosed: {
+            root.forceActiveFocus()
+        }
+    }
+
+    SDialog {
+        id: newSubfolderDialog
+        title: root.tr("New Subfolder")
+        standardButtons: Dialog.Ok | Dialog.Cancel
+        modal: true
+        property var model: ""
+        property var folder: ""
+
+        function show(model, folder) {
+            newSubfolderDialog.model = model
+            newSubfolderDialog.folder = folder
+            subfolderName.text = ""
+            newSubfolderDialog.open()
+            subfolderName.forceActiveFocus()
+        }
+
+        height: 100
+        width: 300
+
+        STextInput {
+            id: subfolderName
+            anchors.fill: parent
+            anchors.margins: 10
+            color: COMMON.fg1
+            verticalAlignment: Text.AlignVCenter
+            selectByMouse: true
+            onAccepted: {
+                newSubfolderDialog.accept()
+            }
+        }
+
+        onAccepted: {
+            var subfolder = subfolderName.text.trim()
+            if(subfolder != "" && subfolder.indexOf("/") == -1 && subfolder.indexOf("\\") == -1) {
+                EXPLORER.doMove(newSubfolderDialog.model, newSubfolderDialog.folder, subfolder)
+            }
         }
 
         onClosed: {

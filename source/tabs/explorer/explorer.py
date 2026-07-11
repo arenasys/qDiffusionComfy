@@ -196,6 +196,7 @@ class Populater(QObject):
 class Explorer(QObject):
     updated = pyqtSignal()
     tabUpdated = pyqtSignal()
+    dragChanged = pyqtSignal()
     updateOptions = pyqtSignal()
     updateFavourites = pyqtSignal()
     dragSignal = pyqtSignal(str)
@@ -234,6 +235,7 @@ class Explorer(QObject):
         self._currentFolder = ""
         self._cellSize = 150
         self._showInfo = False
+        self._dragging = False
 
         self.dragSignal.connect(self.drag, Qt.QueuedConnection)
 
@@ -248,6 +250,10 @@ class Explorer(QObject):
     @pyqtProperty(str, notify=tabUpdated)
     def currentQuery(self):
         return f"category = '{self._currentTab}' AND folder = '{self._currentFolder}'"
+
+    @pyqtProperty(bool, notify=dragChanged)
+    def dragging(self):
+        return self._dragging
 
     @pyqtSlot(str, str)
     def setCurrent(self, tab, folder):
@@ -331,11 +337,6 @@ class Explorer(QObject):
         self.gui.makeRequest(request)
 
     @pyqtSlot(str)
-    def doPrune(self, file):
-        request = {"type":"manage", "data": {"operation": "prune", "file": file}}
-        self.gui.makeRequest(request)
-
-    @pyqtSlot(str)
     def doVisit(self, file):
         path = os.path.abspath(os.path.join(self.gui.modelDirectory(), file))
         try:
@@ -347,20 +348,6 @@ class Explorer(QObject):
     def doEdit(self, file, name, desc):
         old_file = file
         new_file = os.path.join(os.path.dirname(old_file), name)
-        old_path = os.path.abspath(os.path.join(self.gui.modelDirectory(), old_file.split('.',1)[0]))
-        new_path = os.path.abspath(os.path.join(self.gui.modelDirectory(), new_file.split('.',1)[0]))
-
-        if old_file != new_file:
-            for ext in [".txt", ".png", ".jpg"]:
-                if os.path.exists(old_path + ext):
-                    shutil.move(old_path + ext, new_path + ext)
-        
-        if desc:
-            os.makedirs(os.path.dirname(new_path), exist_ok=True)
-            with open(new_path + ".txt", "w", encoding='utf-8') as f:
-                f.write(desc)
-        elif os.path.exists(new_path + ".txt"):
-            os.remove(new_path + ".txt")
 
         if old_file != new_file:
             request = {"type":"manage", "data": {"operation": "modify", "old_file": old_file, "new_file": new_file}}
@@ -374,7 +361,13 @@ class Explorer(QObject):
         mimeData = QMimeData()
         mimeData.setData(MIME_EXPLORER_MODEL, QByteArray(model.encode()))
         drag.setMimeData(mimeData)
-        drag.exec()
+        self._dragging = True
+        self.dragChanged.emit()
+        try:
+            drag.exec(Qt.MoveAction, Qt.MoveAction)
+        finally:
+            self._dragging = False
+            self.dragChanged.emit()
 
     @pyqtSlot(str)
     def doDrag(self, model):
@@ -389,9 +382,15 @@ class Explorer(QObject):
             return ""
     
     @pyqtSlot(str, str, str)
-    def doMove(self, model, folder, subfolder):
+    def doMove(self, file, folder, subfolder):
         folder = MODEL_FOLDERS[folder][0]
-        request = {"type":"manage", "data": {"operation": "move", "old_file": model, "new_folder": folder, "new_subfolder": subfolder}}
+        
+        if subfolder:
+            new_file = os.path.join(folder, subfolder, os.path.basename(file))
+        else:
+            new_file = os.path.join(folder, os.path.basename(file))
+
+        request = {"type":"manage", "data": {"operation": "modify", "old_file": file, "new_file": new_file}}
         self.gui.makeRequest(request)
 
     @pyqtProperty(int, notify=updated)
