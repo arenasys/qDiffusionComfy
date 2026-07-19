@@ -504,6 +504,10 @@ class GUI(QObject):
         self.backend.makeRequest({"type":"options"})
 
     @pyqtSlot()
+    def unloadModels(self):
+        self.backend.makeRequest({"type":"manage", "data": {"operation": "unload"}})
+
+    @pyqtSlot()
     def clearError(self):
         if self._statusMode != StatusMode.STARTING:
             self._statusText = "Ready"

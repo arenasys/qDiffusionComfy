@@ -127,7 +127,7 @@ Item {
                 visible: placeholder.visible
                 anchors.fill: placeholder
                 source: placeholder
-                color: addDrop.containsDrag ? COMMON.fg2 : COMMON.bg4
+                color: COMMON.bg4
             }
         }
 
@@ -362,20 +362,6 @@ Item {
                         BASIC.suggestions.vocabRemove(sql_name)
                     }
                 }
-            }
-        }
-
-        AdvancedDropArea {
-            id: addDrop
-            anchors.fill: parent
-
-            onDropped: {
-                EXPLORER.doReplace(mimeData, sql_file)
-                root.changed()
-                thumbnail.source = ""
-                fullThumbnail.source = ""
-                thumbnail.source = Qt.binding(function() { return thumbnail.trueSource })
-                fullThumbnail.source = Qt.binding(function() { return fullThumbnail.trueSource })
             }
         }
     }

@@ -55,6 +55,14 @@ SMenuBar {
                 GUI.refreshModels()
             }
         }
+        SMenuSeparator {}
+        SMenuItem {
+            text: root.tr("Unload models")
+
+            onPressed: {
+                GUI.unloadModels()
+            }
+        }
     }
     SMenu {
         title: root.tr("View")
