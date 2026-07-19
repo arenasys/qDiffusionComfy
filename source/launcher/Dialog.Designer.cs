@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace qDiffusion
+namespace qComfy
 {
     partial class Dialog
     {

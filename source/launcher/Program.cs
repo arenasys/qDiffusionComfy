@@ -14,7 +14,7 @@ using System.Drawing;
 using System.Linq;
 using Microsoft.Win32;
 
-namespace qDiffusion
+namespace qComfy
 {
     class Worker
     {
@@ -48,7 +48,7 @@ namespace qDiffusion
 
         static void RegisterProtocol(string exe)
         {
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Classes\qDiffusion");
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Classes\qComfy");
 
             bool replace = false;
             if (key != null)
@@ -67,14 +67,14 @@ namespace qDiffusion
 
             if (replace)
             {
-                Registry.CurrentUser.DeleteSubKeyTree(@"Software\Classes\qDiffusion");
+                Registry.CurrentUser.DeleteSubKeyTree(@"Software\Classes\qComfy");
                 key = null;
             }
 
             if (key == null)
             {
-                key = Registry.CurrentUser.CreateSubKey(@"Software\Classes\qDiffusion");
-                key.SetValue(string.Empty, "URL:qDiffusion");
+                key = Registry.CurrentUser.CreateSubKey(@"Software\Classes\qComfy");
+                key.SetValue(string.Empty, "URL:qComfy");
                 key.SetValue("URL Protocol", string.Empty);
 
                 var icon = key.CreateSubKey("DefaultIcon");
@@ -295,7 +295,7 @@ namespace qDiffusion
             var exe_dir = Path.GetDirectoryName(exe);
             Directory.SetCurrentDirectory(exe_dir);
 
-            var app_user_model_id = "arenasys.qdiffusion." + MD5(exe);
+            var app_user_model_id = "arenasys.qcomfy." + MD5(exe);
             SetCurrentProcessExplicitAppUserModelID(app_user_model_id);
 
             if (args.Length >= 2 && args[0] == "-e")
@@ -374,7 +374,7 @@ namespace qDiffusion
             Environment.SetEnvironmentVariable("VIRTUAL_ENV", Path.Combine(exe_dir, "venv"));
             Environment.SetEnvironmentVariable("PIP_CONFIG_FILE", "nul");
 
-            // Register qdiffusion:// protocol handler
+            // Register qcomfy:// protocol handler
             RegisterProtocol(exe);
 
             python = ".\\venv\\Scripts\\pythonw.exe";

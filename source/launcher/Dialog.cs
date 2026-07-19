@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace qDiffusion
+namespace qComfy
 {
     public partial class Dialog : Form
     {

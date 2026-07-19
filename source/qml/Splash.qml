@@ -9,7 +9,7 @@ ApplicationWindow {
     width: 1100
     height: 600
     color: "#1a1a1a"
-    title: TRANSLATOR.instance.translate("qDiffusion", "Title");
+    title: TRANSLATOR.instance.translate("qComfy", "Title");
     flags: Qt.Window | Qt.WindowStaysOnTopHint
 
     Image {

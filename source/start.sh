@@ -7,15 +7,15 @@ cd "$SCRIPT_DIR"
 
 echo "[Desktop Entry]
 Exec=$SCRIPT %u
-Name=qDiffusion
+Name=qComfy
 Icon=$SCRIPT_DIR/launcher/icon.png
-MimeType=application/x-qdiffusion;x-scheme-handler/qdiffusion;
+MimeType=application/x-qcomfy;x-scheme-handler/qcomfy;
 Type=Application
 StartupNotify=false
-Terminal=false" > qDiffusion-handler.desktop
-xdg-desktop-menu install qDiffusion-handler.desktop
-xdg-mime default qDiffusion-handler.desktop x-scheme-handler/qdiffusion
-rm qDiffusion-handler.desktop
+Terminal=false" > qComfy-handler.desktop
+xdg-desktop-menu install qComfy-handler.desktop
+xdg-mime default qComfy-handler.desktop x-scheme-handler/qcomfy
+rm qComfy-handler.desktop
 chmod +x $SCRIPT
 
 cd ..

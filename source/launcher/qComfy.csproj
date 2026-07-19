@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{5EF6D417-1E1F-4D3C-BBB3-EB05C66CE439}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>qDiffusion</RootNamespace>
-    <AssemblyName>qDiffusion</AssemblyName>
+    <RootNamespace>qComfy</RootNamespace>
+    <AssemblyName>qComfy</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -60,11 +60,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Dialog.resx">
-      <DependentUpon>Dialog.cs</DependentUpon>
-    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

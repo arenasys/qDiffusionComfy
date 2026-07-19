@@ -83,7 +83,7 @@ if __name__ == "__main__":
     if invalid:
         print(f"PATH INVALID ({VENV_DIR}) CONTAINS UNICODE ({invalid})")
         if IS_WIN:
-            VENV_DIR = os.getcwd()[0]+":\\qDiffusion"
+            VENV_DIR = os.getcwd()[0]+":\\qComfy"
             print(f"USING {VENV_DIR} INSTEAD")
         else:
             print("FAILED")

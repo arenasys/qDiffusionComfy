@@ -28,9 +28,9 @@ from PyQt5.QtGui import QIcon
 
 from translation import Translator
 
-NAME = "qDiffusion"
-LAUNCHER = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "qDiffusion.exe")
-APPID = "arenasys.qdiffusion." + hashlib.md5(LAUNCHER.encode("utf-8")).hexdigest()
+NAME = "qComfy"
+LAUNCHER = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "qComfy.exe")
+APPID = "arenasys.qcomfy." + hashlib.md5(LAUNCHER.encode("utf-8")).hexdigest()
 ERRORED = False
 
 class Application(QApplication):
@@ -460,8 +460,8 @@ def launch(url):
     signal.signal(signal.SIGINT, lambda sig, frame: app.quit())
     app.startTimer(100)
 
-    app.setOrganizationName("qDiffusion")
-    app.setOrganizationDomain("qDiffusion")
+    app.setOrganizationName("qComfy")
+    app.setOrganizationDomain("qComfy")
     app.endpoint = url
     
     engine = QQmlApplicationEngine()
@@ -532,7 +532,7 @@ def main():
 
     url = None
     try:
-        parser = argparse.ArgumentParser(description='qDiffusion')
+        parser = argparse.ArgumentParser(description='qComfy')
         parser.add_argument("url", type=str, help="remote endpoint URL", nargs='?')
         url = parser.parse_args().url
     except Exception:
